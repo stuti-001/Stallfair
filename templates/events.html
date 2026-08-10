@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+{% load static %}
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stallfair - Events happening near you</title>
+  <!-- CSS Link -->
+  <link rel="stylesheet" href="{% static 'style.css' %}" />
+  <!-- JS Link -->
+  <script defer src="{% static 'script.js' %}"></script>
+</head>
+
+  <body class="home-body">
+    <div class="home-wrapper">
+      <!-- Navigation Header -->
+      <header class="home-navbar">
+        <a href="{% url 'home' %}" class="nav-left">
+          <span class="nav-logo-dot">●</span>
+          <span class="nav-logo-text">Stallfair</span>
+        </a>
+        <nav class="nav-right">
+          <a href="{% url 'home' %}" class="nav-item">Home</a>
+          <span class="nav-separator"></span>
+
+          <a href="{% url 'event_list' %}" class="nav-item active">Events</a>
+          <span class="nav-separator"></span>
+
+          <a href="{% url 'login' %}" class="nav-item ticket-item">
+            My Tickets
+            <span class="ticket-badge">2</span>
+          </a>
+          <span class="nav-separator"></span>
+
+          <a href="{% url 'login' %}" class="nav-item">Profile</a>
+          <a href="{% url 'login' %}" class="nav-item nav-btn-login">Log in</a>
+        </nav>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="home-main">
+        <!-- Events Main Section -->
+        <section class="events-section">
+          <div class="events-header">
+            <span class="events-issue">ISSUE No.12</span>
+            <h1 class="events-main-title">
+              Everything happening
+              <span class="events-title-italic">near you</span>
+            </h1>
+          </div>
+
+          <!-- Dropdown Filter Pills -->
+          <div class="events-filter-bar">
+            <!-- Location Dropdown -->
+            <div class="filter-dropdown" id="dropdown-location">
+              <button
+                class="filter-pill-btn pill-btn-kathmandu"
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+              >
+                <span class="pill-btn-icon">📍</span>
+                <span class="pill-btn-text">Kathmandu</span>
+                <span class="pill-btn-arrow">▾</span>
+              </button>
+              <ul class="filter-dropdown-menu" role="listbox">
+                <li
+                  class="filter-dropdown-item active-item"
+                  role="option"
+                  data-value="kathmandu"
+                >
+                  Kathmandu
+                </li>
+                <li
+                  class="filter-dropdown-item"
+                  role="option"
+                  data-value="lalitpur"
+                >
+                  Lalitpur
+                </li>
+                <li
+                  class="filter-dropdown-item"
+                  role="option"
+                  data-value="bhaktapur"
+                >
+                  Bhaktapur
+                </li>
+                <li
+                  class="filter-dropdown-item"
+                  role="option"
+                  data-value="pokhara"
+                >
+                  Pokhara
+                </li>
+              </ul>
+            </div>
+
+            <!-- Date Dropdown -->
+            <div class="filter-dropdown" id="dropdown-date">
+              <button
+                class="filter-pill-btn pill-btn-date"
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+              >
+                <span class="pill-btn-icon">🗓️</span>
+                <span class="pill-btn-text">Any date</span>
+                <span class="pill-btn-arrow">▾</span>
+              </button>
+              <ul class="filter-dropdown-menu" role="listbox">
+                <li
+                  class="filter-dropdown-item active-item"
+                  role="option"
+                  data-value="all"
+                >
+                  Any date
+                </li>
+                <li class="filter-dropdown-item" role="option" data-value="fri">
+                  Friday
+                </li>
+                <li class="filter-dropdown-item" role="option" data-value="sat">
+                  Saturday
+                </li>
+                <li class="filter-dropdown-item" role="option" data-value="sun">
+                  Sunday
+                </li>
+              </ul>
+            </div>
+
+            <!-- Category Dropdown -->
+            <div class="filter-dropdown" id="dropdown-category">
+              <button
+                class="filter-pill-btn pill-btn-category"
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+              >
+                <span class="pill-btn-icon">🎟️</span>
+                <span class="pill-btn-text">Category</span>
+                <span class="pill-btn-arrow">▾</span>
+              </button>
+              <ul class="filter-dropdown-menu" role="listbox">
+                <li
+                  class="filter-dropdown-item active-item"
+                  role="option"
+                  data-value="all"
+                >
+                  All Categories
+                </li>
+                <li
+                  class="filter-dropdown-item"
+                  role="option"
+                  data-value="food"
+                >
+                  Food & Produce
+                </li>
+                <li
+                  class="filter-dropdown-item"
+                  role="option"
+                  data-value="vintage"
+                >
+                  Vintage & Music
+                </li>
+                <li
+                  class="filter-dropdown-item"
+                  role="option"
+                  data-value="street-food"
+                >
+                  Street Food
+                </li>
+                <li
+                  class="filter-dropdown-item"
+                  role="option"
+                  data-value="craft"
+                >
+                  Craft
+                </li>
+              </ul>
+            </div>
+
+            <!-- Price Dropdown -->
+            <div class="filter-dropdown" id="dropdown-price">
+              <button
+                class="filter-pill-btn pill-btn-price"
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+              >
+                <span class="pill-btn-icon">💰</span>
+                <span class="pill-btn-text">Price</span>
+                <span class="pill-btn-arrow">▾</span>
+              </button>
+              <ul class="filter-dropdown-menu" role="listbox">
+                <li
+                  class="filter-dropdown-item active-item"
+                  role="option"
+                  data-value="all"
+                >
+                  Any Price
+                </li>
+                <li
+                  class="filter-dropdown-item"
+                  role="option"
+                  data-value="under-10"
+                >
+                  Under $10
+                </li>
+                <li
+                  class="filter-dropdown-item"
+                  role="option"
+                  data-value="under-15"
+                >
+                  Under $15
+                </li>
+                <li
+                  class="filter-dropdown-item"
+                  role="option"
+                  data-value="under-20"
+                >
+                  Under $20
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Dotted Separator -->
+          <div class="events-divider"></div>
+
+          <!-- Vertical Events List -->
+          <div class="events-list" id="events-list">
+            <!-- Event 01 -->
+            <div
+              class="event-row"
+              data-id="1"
+              data-location="kathmandu"
+              data-date="sat"
+              data-category="food"
+              data-price="12"
+            >
+              <span class="event-number">01</span>
+              <div class="event-color-block block-gradient-gold"></div>
+              <div class="event-details">
+                <h3 class="event-title">Sunrise Farmers Market</h3>
+                <p class="event-meta">
+                  Riverside Green &nbsp;·&nbsp; Sat, 7-11am &nbsp;·&nbsp; Food &
+                  Produce
+                </p>
+              </div>
+              <div class="event-dots-spacer"></div>
+              <div class="event-price-wrapper">
+                <span class="event-price">$12+</span>
+              </div>
+            </div>
+
+            <!-- Event 02 -->
+            <div
+              class="event-row"
+              data-id="2"
+              data-location="kathmandu"
+              data-date="sun"
+              data-category="vintage"
+              data-price="8"
+            >
+              <span class="event-number">02</span>
+              <div class="event-color-block block-teal"></div>
+              <div class="event-details">
+                <h3 class="event-title">Vintage Vinyl Swap</h3>
+                <p class="event-meta">
+                  The Old Depot &nbsp;·&nbsp; Sun, 12-6pm &nbsp;·&nbsp; Vintage
+                  & Music
+                </p>
+              </div>
+              <div class="event-dots-spacer"></div>
+              <div class="event-price-wrapper">
+                <span class="event-price">$8+</span>
+              </div>
+            </div>
+
+            <!-- Event 03 -->
+            <div
+              class="event-row"
+              data-id="3"
+              data-location="kathmandu"
+              data-date="fri"
+              data-category="street-food"
+              data-price="15"
+            >
+              <span class="event-number">03</span>
+              <div class="event-color-block block-orange"></div>
+              <div class="event-details">
+                <h3 class="event-title">Night Noodle Bazaar</h3>
+                <p class="event-meta">
+                  Pier 9 &nbsp;·&nbsp; Fri, 6-11pm &nbsp;·&nbsp; Street Food
+                </p>
+              </div>
+              <div class="event-dots-spacer"></div>
+              <div class="event-price-wrapper">
+                <span class="event-price">$15+</span>
+              </div>
+            </div>
+
+            <!-- Event 04 -->
+            <div
+              class="event-row"
+              data-id="4"
+              data-location="kathmandu"
+              data-date="sun"
+              data-category="craft"
+              data-price="5"
+            >
+              <span class="event-number">04</span>
+              <div class="event-color-block block-salmon"></div>
+              <div class="event-details">
+                <h3 class="event-title">Handmade Paper & Craft Fair</h3>
+                <p class="event-meta">
+                  Baghbazar Courtyard &nbsp;·&nbsp; Sun, 10-5pm &nbsp;·&nbsp;
+                  Craft
+                </p>
+              </div>
+              <div class="event-dots-spacer"></div>
+              <div class="event-price-wrapper">
+                <span class="event-price">$5+</span>
+              </div>
+            </div>
+
+            <!-- No Events Message -->
+            <div
+              class="events-empty-state"
+              id="events-empty-state"
+              style="display: none"
+            >
+              <span class="empty-state-emoji">🔍</span>
+              <h3 class="empty-state-title">
+                No events found matching those filters
+              </h3>
+              <p class="empty-state-subtitle">
+                Try selecting different filter options to explore more pop-ups.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

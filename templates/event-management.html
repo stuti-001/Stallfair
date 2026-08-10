@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  {% load static %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stallfair - Organizer Desk - Manage Events</title>
+    <!-- CSS Link -->
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <!-- JS Link -->
+    <script defer src="{% static 'script.js' %}"></script>
+  </head>
+
+  <body class="organizer-body">
+    <!-- Full Width Organizer Navbar -->
+    <header class="organizer-navbar">
+      <a href="{% url 'home' %}" class="nav-left">
+        <div class="logo-group">
+          <div class="logo-main">
+            <span class="nav-logo-dot">●</span>
+            <span class="nav-logo-text">Stallfair</span>
+          </div>
+          <span class="nav-logo-sub">ORGANIZER DESK</span>
+        </div>
+      </a>
+      <nav class="nav-center">
+        <a href="#" class="nav-item">Dashboard</a>
+        <a href="{% url 'create_event' %}" class="nav-item active">Manage Events</a>
+        <a href="#" class="nav-item">Bookings</a>
+        <a href="#" class="nav-item">Analytics</a>
+      </nav>
+      <div class="nav-right">
+        <div class="profile-group">
+          <span class="profile-avatar"></span>
+          <span class="profile-name">M. Rai</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="organizer-wrapper">
+      <main class="organizer-main">
+        <!-- Left Section: Corkboard -->
+        <section class="corkboard-section">
+          <div class="corkboard-header">
+            <h1 class="corkboard-title">The corkboard</h1>
+            <p class="corkboard-subtitle">Pinned events · tap to edit</p>
+          </div>
+
+          <div class="corkboard-container">
+            <!-- Pinned line that connects dots -->
+            <div class="corkboard-line"></div>
+
+            <div class="event-cards" id="event-cards-container">
+              <!-- Event Card 1 (Active) -->
+              <div class="event-card active" data-id="1">
+                <span class="pin-dot pin-red"></span>
+                <div class="card-body">
+                  <h3 class="card-title">Sunrise Farmers Market</h3>
+                  <p class="card-meta">Published · Sat 9 Aug</p>
+                </div>
+              </div>
+
+              <!-- Event Card 2 -->
+              <div class="event-card" data-id="2">
+                <span class="pin-dot pin-teal"></span>
+                <div class="card-body">
+                  <h3 class="card-title">Craft Alley Pop-up</h3>
+                  <p class="card-meta">Published · Sat 9 Aug</p>
+                </div>
+              </div>
+
+              <!-- Event Card 3 -->
+              <div class="event-card" data-id="3">
+                <span class="pin-dot pin-yellow"></span>
+                <div class="card-body">
+                  <h3 class="card-title">Rooftop Cinema Night</h3>
+                  <p class="card-meta">Draft · unscheduled</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- New Event Card Button -->
+            <button class="new-card-btn" id="btn-new-card">
+              + New event card
+            </button>
+          </div>
+        </section>
+
+        <!-- Right Section: Event Details Form -->
+        <section class="editor-section">
+          <div class="editor-container">
+            <!-- Orange/peach pill active editing state -->
+            <div class="editing-pill-wrapper">
+              <span class="editing-pill" id="editing-badge-text">Editing · Sunrise Farmers Market</span>
+            </div>
+
+            <form id="event-editor-form" class="editor-form" onsubmit="return false;">
+              <!-- Event Title Input -->
+              <div class="input-group-field">
+                <label for="editor-title">EVENT TITLE</label>
+                <input
+                  type="text"
+                  id="editor-title"
+                  class="editor-input"
+                  value="Sunrise Farmers Market"
+                  required
+                />
+              </div>
+
+              <!-- Date and Venue Row -->
+              <div class="editor-row">
+                <div class="input-group-field col-half">
+                  <label for="editor-date">DATE</label>
+                  <input
+                    type="text"
+                    id="editor-date"
+                    class="editor-input"
+                    value="Sat, 9 Aug"
+                    required
+                  />
+                </div>
+                <div class="input-group-field col-half">
+                  <label for="editor-venue">VENUE</label>
+                  <input
+                    type="text"
+                    id="editor-venue"
+                    class="editor-input"
+                    value="Riverside Green"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- Description Input -->
+              <div class="input-group-field">
+                <label for="editor-description">DESCRIPTION</label>
+                <input
+                  type="text"
+                  id="editor-description"
+                  class="editor-input"
+                  value="Forty local growers, a coffee cart, and the season's best produce..."
+                  required
+                />
+              </div>
+
+              <!-- Ticket Tiers List -->
+              <div class="ticket-tiers-container">
+                <h3 class="ticket-tiers-heading">Ticket tiers</h3>
+                <div class="ticket-tiers-list" id="editor-ticket-tiers">
+                  <!-- General Entry -->
+                  <div class="ticket-tier-item">
+                    <span class="ticket-tier-name">General Entry</span>
+                    <span class="ticket-tier-price">$12.00</span>
+                  </div>
+                  <!-- Early Bird -->
+                  <div class="ticket-tier-item">
+                    <span class="ticket-tier-name">Early Bird</span>
+                    <span class="ticket-tier-price">$18.00</span>
+                  </div>
+                  <!-- Family Pass -->
+                  <div class="ticket-tier-item">
+                    <span class="ticket-tier-name">Family Pass</span>
+                    <span class="ticket-tier-price">$30.00</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actions Buttons -->
+              <div class="editor-buttons">
+                <button type="submit" class="btn-primary-action" id="btn-submit-publish">
+                  Publish event
+                </button>
+                <button type="button" class="btn-secondary-action" id="btn-submit-draft">
+                  Save draft
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

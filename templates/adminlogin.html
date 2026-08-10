@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backstage Pass — Staff &amp; Organizer Access</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    
+  <script defer src="{% static 'script.js' %}"></script>
+
+</head>
+<body>
+  <main class="page">
+    <section class="auth-card">
+      <div class="badge-icon" aria-hidden="true">
+        <span class="badge-icon__dot"></span>
+      </div>
+
+      <span class="pill">Backstage Pass</span>
+
+      <h1 class="title">Staff &amp; organizer access</h1>
+      <p class="subtitle">This gate is for event owners only.</p>
+
+     <form id="loginForm" class="auth-form" method="POST" action="{% url 'admin_login' %}">
+          {% csrf_token %}        
+          <div class="field">
+          <label for="username" class="field__label">Email</label>
+          <input
+            type="email"
+            id="login-email"
+            name="email"
+            class="field__input"
+            placeholder="owner@stallfair.biz"
+            autocomplete="email"
+            required
+          >
+          <span class="field__error" id="usernameError"></span>
+        </div>
+
+        <div class="field">
+          <label for="password" class="field__label">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="field__input"
+            autocomplete="current-password"
+            required
+          >
+          <span class="field__error" id="passwordError"></span>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">
+          <span class="btn-submit__text">Enter backstage</span>
+          <span class="btn-submit__arrow" aria-hidden="true">&rarr;</span>
+        </button>
+      </form>
+
+      {% if error %}
+      <div class="field__error server-error" role="alert">{{ error }}</div>
+      {% endif %}
+
+      <p class="footer-text">
+        Not an organizer?
+        <a href="{% url 'login' %}" class="footer-link" id="customerLoginLink">Customer login</a>
+      </p>
+    </section>
+  </main>
+</body>
+</html>

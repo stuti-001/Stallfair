@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  {% load static %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stallfair - Small stalls. Big stories. Pop-ups, done right.</title>
+    <!-- CSS Link -->
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <!-- JS Link -->
+    <script defer src="{% static 'script.js' %}"></script>
+  </head>
+
+  <body class="home-body">
+    <div class="home-wrapper">
+      <!-- Navigation Header -->
+      <header class="home-navbar">
+        <a href="{% url 'home' %}" class="nav-left">
+          <span class="nav-logo-dot">●</span>
+          <span class="nav-logo-text">Stallfair</span>
+        </a>
+        <nav class="nav-right">
+        <a href="{% url 'home' %}" class="nav-item active">Home</a>
+          <span class="nav-separator"></span>
+
+        <a href="{% url 'event_list' %}" class="nav-item">Events</a>
+          <span class="nav-separator"></span>
+
+        <a href="{% url 'login' %}" class="nav-item ticket-item">
+            My Tickets
+            <span class="ticket-badge">2</span>
+          </a>
+          <span class="nav-separator"></span>
+
+        <a href="{% url 'login' %}" class="nav-item">Profile</a>
+        <a href="{% url 'login' %}" class="nav-item nav-btn-login">Log in</a>
+        </nav>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="home-main">
+        <!-- Hero Section -->
+        <section class="hero-section">
+          <!-- Left: Hero Info -->
+          <div class="hero-info">
+            <div class="weekend-badge">✦ THIS WEEKEND · SAT–SUN</div>
+
+            <h1 class="hero-title">
+              Small stalls.<br />
+              Big stories.<br />
+              <span class="hero-italic-highlight">Pop-ups,</span> done right.
+            </h1>
+
+            <p class="hero-description">
+              Find the maker markets, night bazaars and one-weekend-only fairs
+              worth crossing town for — then book your spot in three taps.
+            </p>
+
+            <div class="hero-cta-group">
+              <a href="{% url 'event_list' %}" class="btn-cta-browse" id="btn-browse">
+                Browse events <span class="cta-arrow">→</span>
+              </a>
+              <span class="cta-stats-text">218 pop-ups this month</span>
+            </div>
+
+            <!-- Category Pills -->
+            <div class="category-pills">
+              <button class="category-pill pill-all" data-category="all">
+                <span class="pill-emoji">✨</span> All
+              </button>
+              <button class="category-pill pill-food" data-category="food">
+                <span class="pill-emoji">🍵</span> Food
+              </button>
+              <button class="category-pill pill-craft" data-category="craft">
+                <span class="pill-emoji">🎨</span> Craft
+              </button>
+              <button class="category-pill pill-music" data-category="music">
+                <span class="pill-emoji">🎶</span> Music
+              </button>
+              <button
+                class="category-pill pill-vintage"
+                data-category="vintage"
+              >
+                <span class="pill-emoji">🛍️</span> Vintage
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Polaroid collage -->
+          <div class="hero-visual">
+            <div class="polaroid-collage">
+              <!-- Polaroid 1: Night Market (Fri) -->
+              <div class="polaroid-card card-night-market">
+                <div class="polaroid-img-placeholder img-orange"></div>
+                <div class="polaroid-label">Night Market – Fri</div>
+              </div>
+
+              <!-- Polaroid 2: Craft Alley (Sat) -->
+              <div class="polaroid-card card-craft-alley">
+                <div class="polaroid-img-placeholder img-teal"></div>
+                <div class="polaroid-label">Craft Alley – Sat</div>
+              </div>
+
+              <!-- Polaroid 3: Flea & Vinyl (Sun) -->
+              <div class="polaroid-card card-flea-vinyl">
+                <div class="polaroid-img-placeholder img-gold"></div>
+                <div class="polaroid-label">Flea & Vinyl – Sun</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Line-up Section -->
+        <section class="lineup-section">
+          <div class="lineup-header">
+            <h2 class="lineup-title">This week's line-up</h2>
+            <div class="lineup-dots-divider"></div>
+            <a href="{% url 'event_list' %}" class="see-all-link">see all 24 →</a>
+          </div>
+
+          <div class="lineup-grid" id="lineup-grid">
+            <!-- Card 1: Sunrise Farmers Market -->
+            <article class="lineup-card" data-category="food">
+              <div class="lineup-card-header">
+                <span class="lineup-badge badge-sat">SAT</span>
+                <span class="lineup-price">$12+</span>
+              </div>
+              <div class="lineup-card-img img-gold"></div>
+              <div class="lineup-card-body">
+                <h3 class="lineup-card-title">Sunrise Farmers Market</h3>
+                <p class="lineup-card-meta">Riverside Green · 7–11am</p>
+              </div>
+            </article>
+
+            <!-- Card 2: Vintage Vinyl Swap -->
+            <article class="lineup-card" data-category="vintage">
+              <div class="lineup-card-header">
+                <span class="lineup-badge badge-sun">SUN</span>
+                <span class="lineup-price">$8+</span>
+              </div>
+              <div class="lineup-card-img img-teal"></div>
+              <div class="lineup-card-body">
+                <h3 class="lineup-card-title">Vintage Vinyl Swap</h3>
+                <p class="lineup-card-meta">The Old Depot · 12–6pm</p>
+              </div>
+            </article>
+
+            <!-- Card 3: Night Noodle Bazaar -->
+            <article class="lineup-card" data-category="food">
+              <div class="lineup-card-header">
+                <span class="lineup-badge badge-fri">FRI</span>
+                <span class="lineup-price">$15+</span>
+              </div>
+              <div class="lineup-card-img img-orange"></div>
+              <div class="lineup-card-body">
+                <h3 class="lineup-card-title">Night Noodle Bazaar</h3>
+                <p class="lineup-card-meta">Pier 9 · 6–11pm</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+
+
+        
+        <!-- Curated for you Section -->
+        <section class="lineup-section">
+          <div class="lineup-header">
+            <h2 class="lineup-title">Curated for you</h2>
+            <div class="lineup-dots-divider"></div>
+            <a href="{% url 'event_list' %}" class="see-all-link">see all 24 →</a>
+          </div>
+
+          <div class="lineup-grid" id="lineup-grid">
+            <!-- Card 1: Sunrise Farmers Market -->
+            <article class="lineup-card" data-category="food">
+              <div class="lineup-card-header">
+                <span class="lineup-badge badge-sat">SAT</span>
+                <span class="lineup-price">$12+</span>
+              </div>
+              <div class="lineup-card-img img-gold"></div>
+              <div class="lineup-card-body">
+                <h3 class="lineup-card-title">Sunrise Farmers Market</h3>
+                <p class="lineup-card-meta">Riverside Green · 7–11am</p>
+              </div>
+            </article>
+
+            <!-- Card 2: Vintage Vinyl Swap -->
+            <article class="lineup-card" data-category="vintage">
+              <div class="lineup-card-header">
+                <span class="lineup-badge badge-sun">SUN</span>
+                <span class="lineup-price">$8+</span>
+              </div>
+              <div class="lineup-card-img img-teal"></div>
+              <div class="lineup-card-body">
+                <h3 class="lineup-card-title">Vintage Vinyl Swap</h3>
+                <p class="lineup-card-meta">The Old Depot · 12–6pm</p>
+              </div>
+            </article>
+
+            <!-- Card 3: Night Noodle Bazaar -->
+            <article class="lineup-card" data-category="food">
+              <div class="lineup-card-header">
+                <span class="lineup-badge badge-fri">FRI</span>
+                <span class="lineup-price">$15+</span>
+              </div>
+              <div class="lineup-card-img img-orange"></div>
+              <div class="lineup-card-body">
+                <h3 class="lineup-card-title">Night Noodle Bazaar</h3>
+                <p class="lineup-card-meta">Pier 9 · 6–11pm</p>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <script>
+        // Make lineup cards clickable and navigate to events page
+        document.addEventListener('DOMContentLoaded', function() {
+          document.querySelectorAll('.lineup-card').forEach(function(card){
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', function(){ window.location.href = "{% url 'event_list' %}"; });
+          });
+        });
+      </script>
+
+    </div>
+  </body>
+</html>

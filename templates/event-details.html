@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+{% load static %}
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stallfair - Sunrise Farmers Market</title>
+  <!-- CSS Link -->
+  <link rel="stylesheet" href="{% static 'style.css' %}" />
+  <!-- JS Link -->
+  <script defer src="{% static 'script.js' %}"></script>
+</head>
+
+  <body class="home-body">
+    <div class="home-wrapper">
+      <!-- Navigation Header -->
+      <header class="home-navbar">
+        <a href="{% url 'home' %}" class="nav-left">
+          <span class="nav-logo-dot">●</span>
+          <span class="nav-logo-text">Stallfair</span>
+        </a>
+        <nav class="nav-right">
+          <a href="{% url 'home' %}" class="nav-item">Home</a>
+          <span class="nav-separator"></span>
+
+          <a href="{% url 'event_list' %}" class="nav-item active">Events</a>
+          <span class="nav-separator"></span>
+
+          <a href="{% url 'login' %}" class="nav-item ticket-item">
+            My Tickets
+            <span class="ticket-badge">2</span>
+          </a>
+          <span class="nav-separator"></span>
+
+          <a href="{% url 'login' %}" class="nav-item">Profile</a>
+          <a href="{% url 'login' %}" class="nav-item nav-btn-login">Log in</a>
+        </nav>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="home-main">
+        <!-- Back link -->
+        <div class="back-link-container">
+          <a href="{% url 'event_list' %}" class="back-link">← back to listing</a>
+        </div>
+
+        <!-- Event Detail Grid -->
+        <section class="event-details-section">
+          <div class="event-details-grid">
+            <!-- Left Column: Visual Showcase -->
+            <div class="event-media-column">
+              <!-- Main Polaroid Card -->
+              <div class="details-polaroid-container">
+                <div class="polaroid-tape-graphic"></div>
+                <div class="polaroid-large-display block-gradient-gold" id="details-main-display"></div>
+              </div>
+
+              <!-- Thumbnails -->
+              <div class="details-thumbnails-row">
+                <button class="thumbnail-choice-btn active" data-color="gold" aria-label="Select gold view">
+                  <span class="thumbnail-block block-gradient-gold"></span>
+                </button>
+                <button class="thumbnail-choice-btn" data-color="teal" aria-label="Select teal view">
+                  <span class="thumbnail-block block-teal"></span>
+                </button>
+                <button class="thumbnail-choice-btn" data-color="orange" aria-label="Select orange view">
+                  <span class="thumbnail-block block-orange"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Column: Information details -->
+            <div class="event-info-column">
+              <div class="event-category-container">
+                <span class="category-detail-pill">📦 Food & Produce</span>
+              </div>
+
+              <h1 class="event-detail-title">Sunrise Farmers Market</h1>
+
+              <p class="event-detail-description">
+                Forty local growers, a coffee cart, and the season's best produce — every Saturday morning on the Riverside Green. Bring a tote.
+              </p>
+
+              <!-- Event badges (Date, Time, Location) -->
+              <div class="event-info-badges">
+                <span class="info-badge-item badge-bg-teal">
+                  <span class="badge-emoji">📅</span> Sat, 9 Aug
+                </span>
+                <span class="info-badge-item badge-bg-teal">
+                  <span class="badge-emoji">⏰</span> 7:00-11:00am
+                </span>
+                <span class="info-badge-item badge-bg-teal">
+                  <span class="badge-emoji">📍</span> Riverside Green
+                </span>
+              </div>
+
+              <!-- Stallholders Section -->
+              <div class="stallholders-showcase">
+                <h2 class="stallholders-section-title">Stallholders featured</h2>
+                <div class="stallholders-pills-list">
+                  <span class="stallholder-pill-item">Root & Bloom Farm</span>
+                  <span class="stallholder-pill-item">Kettle & Bean</span>
+                  <span class="stallholder-pill-item">Honest Loaf Co.</span>
+                  <span class="stallholder-pill-item">+37 more</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Banner (Dashed card) -->
+          <div class="details-booking-banner">
+            <div class="booking-banner-left">
+              <span class="booking-label">FROM</span>
+              <span class="booking-price">$12.00</span>
+            </div>
+            <div class="booking-banner-right">
+              <button class="btn-retro-booking" id="btn-get-tickets">
+                Get tickets <span class="booking-btn-arrow">→</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

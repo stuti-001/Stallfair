@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stallfair - Log In & Create Account</title>
+    <!-- CSS Link -->
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <!-- JS Link -->
+    <script defer src="{% static 'script.js' %}"></script>
+</head>
+
+<body>
+    <div class="page-container">
+        <!-- Outer Framed Border Layout -->
+        <div class="inner-frame">
+
+            <!-- Logo Header -->
+            <a href="{% url 'home' %}" class="header-logo">
+                <span class="star-icon">✦</span>
+                <span class="brand-name">Stallfair</span>
+            </a>
+
+            <!-- Dual-Column Form Card -->
+            <div class="card-container">
+
+                <!-- Left Side: Log In -->
+                <div class="card-column col-left">
+                    <div class="badge-wrapper">
+                        <span class="badge badge-welcome">Welcome back</span>
+                    </div>
+
+                    <h2 class="form-title">Log in</h2>
+
+                    <form id="login-form" class="form-element" onsubmit="return false;">
+                        <div class="input-group">
+                            <label for="login-email">EMAIL</label>
+                            <input type="email" id="login-email" class="input-field" value="stuti@mail.com" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="login-password">PASSWORD</label>
+                            <input type="password" id="login-password" class="input-field" value="password123" required>
+                        </div>
+
+                        <a href="{% url 'home' %}" class="btn btn-login">
+                            Log in <span class="arrow">&rarr;</span>
+                        </a>
+                    </form>
+
+                    <div class="link-wrapper">
+                        <a href="{% url 'home' %}" class="sub-link">Forgot password?</a>
+                    </div>
+                </div>
+
+                <!-- Vertical Split Divider -->
+                <div class="divider-line">
+                    <span class="scissors-icon">✂</span>
+                </div>
+
+                <!-- Right Side: Create Account -->
+                <div class="card-column col-right">
+                    <div class="badge-wrapper">
+                        <span class="badge badge-new">New here?</span>
+                    </div>
+
+                    <h2 class="form-title">Create account</h2>
+
+                    <form id="signup-form" class="form-element" onsubmit="return false;">
+                        <div class="input-group">
+                            <label for="signup-name">FULL NAME</label>
+                            <input type="text" id="signup-name" class="input-field" value="Stuti Sharma" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="signup-email">EMAIL</label>
+                            <input type="email" id="signup-email" class="input-field" value="you@email.com" required>
+                        </div>
+
+                        <a href="{% url 'home' %}" class="btn btn-signup">
+                            Join Stallfair <span class="arrow">&rarr;</span>
+                        </a>
+                    </form>
+
+                    <div class="link-wrapper">
+                        <span class="helper-text">Organizer? <a href="{% url 'admin_login' %}" class="sub-link underline">Admin
+                                login</a></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
