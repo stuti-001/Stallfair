@@ -9,7 +9,7 @@
     <!-- CSS Link -->
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <!-- JS Link -->
-    <script defer src="{% static 'script.js' %}"></script>
+    <script defer src="{% static 'script.js' %}?v=2.0"></script>
 </head>
 
 <body>
@@ -34,21 +34,31 @@
 
                     <h2 class="form-title">Log in</h2>
 
-                    <form id="login-form" class="form-element" onsubmit="return false;">
+                    <form id="login-form" class="form-element" method="POST" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_action" value="login">
+                        {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
+
                         <div class="input-group">
                             <label for="login-email">EMAIL</label>
-                            <input type="email" id="login-email" class="input-field" value="stuti@mail.com" required>
+                            <input type="email" id="login-email" name="username" class="input-field" placeholder="you@email.com" required>
                         </div>
 
                         <div class="input-group">
                             <label for="login-password">PASSWORD</label>
-                            <input type="password" id="login-password" class="input-field" value="password123" required>
+                            <input type="password" id="login-password" name="password" class="input-field" placeholder="••••••••" required>
                         </div>
 
-                        <a href="{% url 'home' %}" class="btn btn-login">
+                        <button type="submit" class="btn btn-login">
                             Log in <span class="arrow">&rarr;</span>
-                        </a>
+                        </button>
                     </form>
+
+                    {% if login_error or error %}
+                    <div class="badge-wrapper" style="margin-top: 15px; text-align: center;">
+                        <span class="badge badge-alert">⚠️ {{ login_error|default:error }}</span>
+                    </div>
+                    {% endif %}
 
                     <div class="link-wrapper">
                         <a href="{% url 'home' %}" class="sub-link">Forgot password?</a>
@@ -68,21 +78,44 @@
 
                     <h2 class="form-title">Create account</h2>
 
-                    <form id="signup-form" class="form-element" onsubmit="return false;">
+                    <form id="signup-form" class="form-element" method="POST" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_action" value="signup">
+
                         <div class="input-group">
                             <label for="signup-name">FULL NAME</label>
-                            <input type="text" id="signup-name" class="input-field" value="Stuti Sharma" required>
+                            <input type="text" id="signup-name" name="fullname" class="input-field" placeholder="Jane Doe" required>
                         </div>
 
                         <div class="input-group">
                             <label for="signup-email">EMAIL</label>
-                            <input type="email" id="signup-email" class="input-field" value="you@email.com" required>
+                            <input type="email" id="signup-email" name="email" class="input-field" placeholder="you@email.com" required>
                         </div>
 
-                        <a href="{% url 'home' %}" class="btn btn-signup">
+                        <div class="input-group">
+                            <label for="signup-password">PASSWORD</label>
+                            <input type="password" id="signup-password" name="password" class="input-field" placeholder="At least 8 characters" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="signup-confirm-password">CONFIRM PASSWORD</label>
+                            <input type="password" id="signup-confirm-password" name="confirm_password" class="input-field" placeholder="Re-enter password" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-signup">
                             Join Stallfair <span class="arrow">&rarr;</span>
-                        </a>
+                        </button>
                     </form>
+
+                    {% if signup_success %}
+                    <div class="badge-wrapper" style="margin-top: 15px; text-align: center;">
+                        <span class="badge badge-new">✦ {{ signup_success }}</span>
+                    </div>
+                    {% elif signup_error %}
+                    <div class="badge-wrapper" style="margin-top: 15px; text-align: center;">
+                        <span class="badge badge-alert">⚠️ {{ signup_error }}</span>
+                    </div>
+                    {% endif %}
 
                     <div class="link-wrapper">
                         <span class="helper-text">Organizer? <a href="{% url 'admin_login' %}" class="sub-link underline">Admin

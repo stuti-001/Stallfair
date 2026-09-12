@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  {% load static %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stallfair - Choose Your Tickets</title>
+    <!-- CSS Link -->
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <!-- JS Link -->
+    <script defer src="{% static 'script.js' %}"></script>
+  </head>
+
+  <body class="ticketbooking-body">
+    <div class="ticketbooking-wrapper">
+      <!-- Top Navigation Header -->
+      <header class="booking-navbar">
+        <a href="{% url 'home' %}" class="nav-left">
+          <span class="nav-logo-dot">●</span>
+          <span class="nav-logo-text">Stallfair</span>
+        </a>
+
+        <!-- Right Action: Cancel -->
+        <div class="booking-nav-right">
+          <a href="{% if event %}{% url 'event_detail' event.id %}{% else %}/events/1/{% endif %}" class="btn-booking-cancel" id="btn-cancel-booking">
+            <span class="cancel-icon">✕</span> Cancel
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Content Layout -->
+      <main class="booking-main-content">
+        <div class="booking-layout-grid">
+          
+          <!-- Left Column: Choose Tickets -->
+          <section class="booking-tickets-column">
+            <div class="booking-header-block">
+              <h1 class="booking-main-title">Choose your tickets</h1>
+              <p class="booking-event-meta">
+                {% if event %}
+                  {{ event.title }} · {{ event.date|date:"D. j M"|default:event.date }}
+                {% else %}
+                  Sunrise Farmers Market · Sat. 9 Aug
+                {% endif %}
+              </p>
+            </div>
+
+            <!-- Ticket Tiers Container -->
+            <div class="ticket-cards-list">
+              <!-- Tier 1: General Entry -->
+              <div class="ticket-tier-card selected" id="ticket-card-general" data-id="general" data-name="General Entry" data-price="12.00">
+                <span class="ticket-badge-selected" id="badge-general">SELECTED</span>
+                <div class="ticket-card-info">
+                  <h3 class="ticket-card-name">General Entry</h3>
+                  <p class="ticket-card-desc">Walk-in access all morning</p>
+                </div>
+                <div class="ticket-card-pricing-control">
+                  <span class="ticket-unit-price">$12.00</span>
+                  <div class="stepper-controls">
+                    <button type="button" class="btn-stepper btn-minus" data-id="general" aria-label="Decrease General Entry quantity">−</button>
+                    <span class="stepper-value" id="qty-general">2</span>
+                    <button type="button" class="btn-stepper btn-plus active-fill" data-id="general" aria-label="Increase General Entry quantity">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tier 2: Early Bird -->
+              <div class="ticket-tier-card" id="ticket-card-early-bird" data-id="early-bird" data-name="Early Bird (7–8am)" data-price="18.00">
+                <span class="ticket-badge-selected" id="badge-early-bird" style="display: none;">SELECTED</span>
+                <div class="ticket-card-info">
+                  <h3 class="ticket-card-name">Early Bird (7–8am)</h3>
+                  <p class="ticket-card-desc">First pick of the produce</p>
+                </div>
+                <div class="ticket-card-pricing-control">
+                  <span class="ticket-unit-price">$18.00</span>
+                  <div class="stepper-controls">
+                    <button type="button" class="btn-stepper btn-minus" data-id="early-bird" aria-label="Decrease Early Bird quantity">−</button>
+                    <span class="stepper-value" id="qty-early-bird">0</span>
+                    <button type="button" class="btn-stepper btn-plus" data-id="early-bird" aria-label="Increase Early Bird quantity">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tier 3: Family Pass -->
+              <div class="ticket-tier-card" id="ticket-card-family" data-id="family" data-name="Family Pass (2+2)" data-price="30.00">
+                <span class="ticket-badge-selected" id="badge-family" style="display: none;">SELECTED</span>
+                <div class="ticket-card-info">
+                  <h3 class="ticket-card-name">Family Pass (2+2)</h3>
+                  <p class="ticket-card-desc">Two adults, two kids under 12</p>
+                </div>
+                <div class="ticket-card-pricing-control">
+                  <span class="ticket-unit-price">$30.00</span>
+                  <div class="stepper-controls">
+                    <button type="button" class="btn-stepper btn-minus" data-id="family" aria-label="Decrease Family Pass quantity">−</button>
+                    <span class="stepper-value" id="qty-family">0</span>
+                    <button type="button" class="btn-stepper btn-plus" data-id="family" aria-label="Increase Family Pass quantity">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Right Column: Order Summary Receipt Card -->
+          <aside class="booking-summary-column">
+            <div class="order-summary-ticket-card">
+              <!-- Decorative Ticket Notches -->
+              <div class="ticket-notch notch-left"></div>
+              <div class="ticket-notch notch-right"></div>
+
+              <h2 class="summary-card-title">Order summary</h2>
+
+              <!-- Items Breakdown -->
+              <div class="summary-items-list" id="summary-items-container">
+                <!-- Dynamically updated -->
+                <div class="summary-item-row" data-id="general">
+                  <span class="item-title">General Entry ×2</span>
+                  <span class="item-cost">$24.00</span>
+                </div>
+                <div class="summary-item-row fee-row" id="summary-fee-row">
+                  <span class="item-title text-muted">Booking fee</span>
+                  <span class="item-cost">$1.50</span>
+                </div>
+              </div>
+
+              <!-- Empty state fallback (hidden by default when items present) -->
+              <div class="summary-empty-state" id="summary-empty-state" style="display: none;">
+                <p>No tickets selected yet</p>
+              </div>
+
+              <!-- Dashed Divider -->
+              <div class="summary-dashed-divider"></div>
+
+              <!-- Total Row -->
+              <div class="summary-total-row">
+                <span class="total-title">Total</span>
+                <span class="total-amount" id="summary-total-amount">$25.50</span>
+              </div>
+
+              <!-- Action Button -->
+              <button type="button" class="btn-continue-payment" id="btn-continue-payment">
+                Continue to payment <span class="continue-arrow">→</span>
+              </button>
+            </div>
+          </aside>
+
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

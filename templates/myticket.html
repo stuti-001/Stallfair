@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  {% load static %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stallfair - Your Ticket Wallet</title>
+    <!-- CSS Link -->
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <!-- JS Link -->
+    <script defer src="{% static 'script.js' %}"></script>
+  </head>
+
+  <body class="home-body wallet-body">
+    <div class="home-wrapper wallet-wrapper">
+      <!-- Navigation Header -->
+      <header class="home-navbar">
+        <a href="{% url 'home' %}" class="nav-left">
+          <span class="nav-logo-dot">●</span>
+          <span class="nav-logo-text">Stallfair</span>
+        </a>
+        <nav class="nav-right">
+          <a href="{% url 'home' %}" class="nav-item">Home</a>
+          <span class="nav-separator"></span>
+
+          <a href="{% url 'event_list' %}" class="nav-item">Events</a>
+          <span class="nav-separator"></span>
+
+          <a href="{% url 'my_tickets' %}" class="nav-item ticket-item active">
+            My Tickets
+            <span class="ticket-badge">3</span>
+          </a>
+          <span class="nav-separator"></span>
+
+          <a href="{% url 'login' %}" class="nav-item">Profile</a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'logout' %}" class="nav-item nav-btn-login">Log out</a>
+          {% else %}
+          <a href="{% url 'login' %}" class="nav-item nav-btn-login">Log in</a>
+          {% endif %}
+        </nav>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="home-main wallet-main-section">
+        <!-- Page Title -->
+        <h1 class="wallet-page-title">Your ticket wallet</h1>
+
+        <!-- Filter Tabs -->
+        <div class="wallet-tabs-row">
+          <button class="wallet-tab-pill active" id="tab-upcoming" data-tab="upcoming">Upcoming (3)</button>
+          <button class="wallet-tab-pill" id="tab-past" data-tab="past">Past</button>
+        </div>
+
+        <!-- Tickets Container: Upcoming View -->
+        <div class="wallet-tickets-view" id="view-upcoming">
+          <div class="wallet-tickets-grid">
+            
+            <!-- Ticket 1: Sunrise Farmers Market -->
+            <div class="wallet-ticket-item">
+              <div class="wallet-ticket-card ticket-gold">
+                <!-- Left Portion -->
+                <div class="ticket-main-body">
+                  <div class="ticket-schedule-text">SAT 9 AUG · 7-11AM</div>
+                  <div class="ticket-event-info">
+                    <h3 class="ticket-event-heading">Sunrise Farmers Market</h3>
+                    <p class="ticket-entry-meta">2 × General Entry</p>
+                  </div>
+                  <div class="ticket-location-text">Riverside Green</div>
+                </div>
+
+                <!-- Right Stub -->
+                <div class="ticket-stub-body">
+                  <div class="ticket-stub-perforation"></div>
+                  <div class="ticket-hatch-box">
+                    <svg viewBox="0 0 54 54" width="48" height="48" class="hatch-svg">
+                      <defs>
+                        <pattern id="diagonalHatchGold" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                          <line x1="0" y1="0" x2="0" y2="8" stroke="#2e1a08" stroke-width="3" />
+                        </pattern>
+                      </defs>
+                      <rect width="54" height="54" rx="6" fill="url(#diagonalHatchGold)" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div class="ticket-tear-instruction">↳ tear along the dotted line at the gate · QR check-in</div>
+            </div>
+
+            <!-- Ticket 2: Vintage Vinyl Swap -->
+            <div class="wallet-ticket-item">
+              <div class="wallet-ticket-card ticket-teal">
+                <!-- Left Portion -->
+                <div class="ticket-main-body">
+                  <div class="ticket-schedule-text">SUN 10 AUG · 12-6PM</div>
+                  <div class="ticket-event-info">
+                    <h3 class="ticket-event-heading">Vintage Vinyl Swap</h3>
+                    <p class="ticket-entry-meta">1 × General Entry</p>
+                  </div>
+                  <div class="ticket-location-text">The Old Depot</div>
+                </div>
+
+                <!-- Right Stub -->
+                <div class="ticket-stub-body">
+                  <div class="ticket-stub-perforation"></div>
+                  <div class="ticket-hatch-box">
+                    <svg viewBox="0 0 54 54" width="48" height="48" class="hatch-svg">
+                      <defs>
+                        <pattern id="diagonalHatchTeal" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                          <line x1="0" y1="0" x2="0" y2="8" stroke="#133830" stroke-width="3" />
+                        </pattern>
+                      </defs>
+                      <rect width="54" height="54" rx="6" fill="url(#diagonalHatchTeal)" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Tickets Container: Past View (Hidden initially) -->
+        <div class="wallet-tickets-view" id="view-past" style="display: none;">
+          <div class="wallet-empty-state">
+            <div class="empty-state-emoji">🎟️</div>
+            <h3 class="empty-state-title">No past tickets</h3>
+            <p class="empty-state-subtitle">Your completed and past event passes will show up here.</p>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </body>
+</html>

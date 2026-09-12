@@ -26,14 +26,18 @@
           <a href="{% url 'event_list' %}" class="nav-item active">Events</a>
           <span class="nav-separator"></span>
 
-          <a href="{% url 'login' %}" class="nav-item ticket-item">
+          <a href="{% url 'my_tickets' %}" class="nav-item ticket-item">
             My Tickets
-            <span class="ticket-badge">2</span>
+            <span class="ticket-badge">3</span>
           </a>
           <span class="nav-separator"></span>
 
           <a href="{% url 'login' %}" class="nav-item">Profile</a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'logout' %}" class="nav-item nav-btn-login">Log out</a>
+          {% else %}
           <a href="{% url 'login' %}" class="nav-item nav-btn-login">Log in</a>
+          {% endif %}
         </nav>
       </header>
 

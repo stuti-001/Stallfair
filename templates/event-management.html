@@ -32,7 +32,8 @@
       <div class="nav-right">
         <div class="profile-group">
           <span class="profile-avatar"></span>
-          <span class="profile-name">M. Rai</span>
+          <span class="profile-name">{{ request.user.first_name }} {{ request.user.last_name|default:"" }}</span>
+          <a href="{% url 'logout' %}" class="sub-link" style="margin-left: 15px; color: var(--color-accent-peach); font-weight: 600; text-decoration: none;">Log out</a>
         </div>
       </div>
     </header>

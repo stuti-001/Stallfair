@@ -36,33 +36,174 @@ document.addEventListener('DOMContentLoaded', () => {
     // Login Form Submit handler
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
 
             const emailInput = document.getElementById('login-email');
+            const passwordInput = document.getElementById('login-password');
             const email = emailInput ? emailInput.value.trim() : '';
+            const password = passwordInput ? passwordInput.value : '';
 
-            if (email) {
-                showToast(`Logging in as ${email}... Welcome back!`, 'success');
-            } else {
-                showToast('Please enter a valid email address.', 'error');
+            if (!email && !password) {
+                showToast('Please enter your email and password.', 'error');
+                return;
             }
+            if (!email) {
+                showToast('Please enter your email address.', 'error');
+                return;
+            }
+            if (!password) {
+                showToast('Please enter your password.', 'error');
+                return;
+            }
+
+            const csrfTokenInput = loginForm.querySelector('[name=csrfmiddlewaretoken]');
+            const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
+
+            const nextInput = loginForm.querySelector('[name=next]');
+            const urlParams = new URLSearchParams(window.location.search);
+            const nextValue = (nextInput ? nextInput.value : '') || urlParams.get('next') || '';
+
+            const postData = {
+                'action': 'login',
+                'form_action': 'login',
+                'username': email,
+                'password': password
+            };
+            if (nextValue) {
+                postData['next'] = nextValue;
+            }
+
+            const actionUrl = loginForm.getAttribute('action') || '/login/';
+            fetch(actionUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams(postData)
+            })
+            .then(async response => {
+                const isJson = response.headers.get('content-type')?.includes('application/json');
+                const data = isJson ? await response.json() : null;
+                if (!response.ok) {
+                    const errorMsg = data?.error || `Server returned error (${response.status}).`;
+                    throw new Error(errorMsg);
+                }
+                return data;
+            })
+            .then(data => {
+                if (data && data.success) {
+                    showToast('Logged in successfully! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '/';
+                    }, 1000);
+                } else if (data) {
+                    showToast(data.error || 'Login failed.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error during login:', error);
+                const msg = (error && error.message && !error.message.includes('fetch') && !error.message.includes('NetworkError'))
+                    ? error.message 
+                    : 'Cannot connect to server. Please check if the Django server is running.';
+                showToast(msg, 'error');
+            });
         });
     }
 
     // Signup Form Submit handler
     if (signupForm) {
         signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
  
             const nameInput = document.getElementById('signup-name');
             const emailInput = document.getElementById('signup-email');
+            const passwordInput = document.getElementById('signup-password');
+            const confirmPasswordInput = document.getElementById('signup-confirm-password');
 
             const name = nameInput ? nameInput.value.trim() : '';
             const email = emailInput ? emailInput.value.trim() : '';
+            const password = passwordInput ? passwordInput.value : '';
+            const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
 
-            if (name && email) {
-                showToast(`Account created for ${name}! Checking credentials...`, 'success');
-            } else {
-                showToast('Please fill out all fields.', 'error');
+            if (!name) {
+                showToast('Please enter your full name.', 'error');
+                return;
             }
+            if (!email) {
+                showToast('Please enter your email address.', 'error');
+                return;
+            }
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailPattern.test(email) || email.includes('..') || email.startsWith('.') || email.endsWith('.')) {
+                showToast('Invalid email address format (e.g. name@example.com).', 'error');
+                return;
+            }
+            if (!password) {
+                showToast('Please enter a password.', 'error');
+                return;
+            }
+            if (password.length < 8) {
+                showToast('Password must be at least 8 characters long.', 'error');
+                return;
+            }
+            if (!confirmPassword) {
+                showToast('Please confirm your password.', 'error');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match. Please ensure both passwords match.', 'error');
+                return;
+            }
+
+            const csrfTokenInput = signupForm.querySelector('[name=csrfmiddlewaretoken]');
+            const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
+
+            const signupActionUrl = signupForm.getAttribute('action') || '/login/';
+            fetch(signupActionUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams({
+                    'action': 'signup',
+                    'form_action': 'signup',
+                    'fullname': name,
+                    'email': email,
+                    'password': password,
+                    'confirm_password': confirmPassword
+                })
+            })
+            .then(async response => {
+                const isJson = response.headers.get('content-type')?.includes('application/json');
+                const data = isJson ? await response.json() : null;
+                if (!response.ok) {
+                    const errorMsg = data?.error || `Server returned error (${response.status}).`;
+                    throw new Error(errorMsg);
+                }
+                return data;
+            })
+            .then(data => {
+                if (data && data.success) {
+                    showToast(data.message, 'success');
+                    if (nameInput) nameInput.value = '';
+                    if (emailInput) emailInput.value = '';
+                    if (passwordInput) passwordInput.value = '';
+                    if (confirmPasswordInput) confirmPasswordInput.value = '';
+                } else if (data) {
+                    showToast(data.error || 'Signup failed.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error during signup:', error);
+                const msg = (error && error.message && !error.message.includes('fetch') && !error.message.includes('NetworkError'))
+                    ? error.message 
+                    : 'Cannot connect to server. Please check if the Django server is running.';
+                showToast(msg, 'error');
+            });
         });
     }
 
@@ -378,8 +519,219 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (getTicketsBtn) {
-        getTicketsBtn.addEventListener('click', () => {
-            showToast('Reserving your tickets for Sunrise Farmers Market... Done!', 'success');
+        getTicketsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const pathSegments = window.location.pathname.split('/').filter(Boolean);
+            let eventId = null;
+            if (pathSegments[0] === 'events' && pathSegments[1] && !isNaN(pathSegments[1])) {
+                eventId = pathSegments[1];
+            }
+            const targetUrl = eventId ? `/ticketbooking/${eventId}/` : '/ticketbooking/';
+            showToast('Opening ticket selection...', 'success');
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 300);
+        });
+    }
+
+    // --- Stallfair Ticket Booking Interactions ---
+    const ticketCards = document.querySelectorAll('.ticket-tier-card');
+    const summaryItemsContainer = document.getElementById('summary-items-container');
+    const summaryTotalAmount = document.getElementById('summary-total-amount');
+    const btnContinuePayment = document.getElementById('btn-continue-payment');
+    const btnCancelBooking = document.getElementById('btn-cancel-booking');
+
+    if (ticketCards.length > 0) {
+        const ticketState = {};
+        const BOOKING_FEE = 1.50;
+
+        // Initialize state from DOM
+        ticketCards.forEach(card => {
+            const id = card.getAttribute('data-id');
+            const name = card.getAttribute('data-name') || card.querySelector('.ticket-card-name')?.textContent.trim();
+            const price = parseFloat(card.getAttribute('data-price')) || 0;
+            const qtyEl = card.querySelector('.stepper-value');
+            const initialQty = qtyEl ? parseInt(qtyEl.textContent.trim(), 10) || 0 : 0;
+
+            ticketState[id] = {
+                card,
+                name,
+                price,
+                qty: initialQty,
+                badgeEl: card.querySelector('.ticket-badge-selected'),
+                qtyEl: qtyEl,
+                plusBtn: card.querySelector('.btn-plus'),
+                minusBtn: card.querySelector('.btn-minus')
+            };
+
+            // Minus button listener
+            if (ticketState[id].minusBtn) {
+                ticketState[id].minusBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (ticketState[id].qty > 0) {
+                        ticketState[id].qty--;
+                        updateTicketDisplay(id);
+                        recalculateSummary();
+                    }
+                });
+            }
+
+            // Plus button listener
+            if (ticketState[id].plusBtn) {
+                ticketState[id].plusBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (ticketState[id].qty < 20) {
+                        ticketState[id].qty++;
+                        updateTicketDisplay(id);
+                        recalculateSummary();
+                    }
+                });
+            }
+        });
+
+        function updateTicketDisplay(id) {
+            const item = ticketState[id];
+            if (!item) return;
+
+            // Update counter text
+            if (item.qtyEl) item.qtyEl.textContent = item.qty;
+
+            // Update card selected status and badge
+            if (item.qty > 0) {
+                item.card.classList.add('selected');
+                if (item.badgeEl) item.badgeEl.style.display = 'inline-block';
+                if (item.plusBtn) item.plusBtn.classList.add('active-fill');
+            } else {
+                item.card.classList.remove('selected');
+                if (item.badgeEl) item.badgeEl.style.display = 'none';
+                if (item.plusBtn) item.plusBtn.classList.remove('active-fill');
+            }
+        }
+
+        function recalculateSummary() {
+            if (!summaryItemsContainer || !summaryTotalAmount) return;
+
+            summaryItemsContainer.innerHTML = '';
+            let subtotal = 0;
+            let totalTicketsCount = 0;
+
+            Object.keys(ticketState).forEach(id => {
+                const item = ticketState[id];
+                if (item.qty > 0) {
+                    totalTicketsCount += item.qty;
+                    const itemTotal = item.qty * item.price;
+                    subtotal += itemTotal;
+
+                    const row = document.createElement('div');
+                    row.className = 'summary-item-row';
+                    row.setAttribute('data-id', id);
+                    row.innerHTML = `
+                        <span class="item-title">${item.name} ×${item.qty}</span>
+                        <span class="item-cost">$${itemTotal.toFixed(2)}</span>
+                    `;
+                    summaryItemsContainer.appendChild(row);
+                }
+            });
+
+            const emptyStateEl = document.getElementById('summary-empty-state');
+
+            if (totalTicketsCount > 0) {
+                if (emptyStateEl) emptyStateEl.style.display = 'none';
+
+                // Add booking fee row
+                const feeRow = document.createElement('div');
+                feeRow.className = 'summary-item-row fee-row';
+                feeRow.id = 'summary-fee-row';
+                feeRow.innerHTML = `
+                    <span class="item-title text-muted">Booking fee</span>
+                    <span class="item-cost">$${BOOKING_FEE.toFixed(2)}</span>
+                `;
+                summaryItemsContainer.appendChild(feeRow);
+
+                const grandTotal = subtotal + BOOKING_FEE;
+                summaryTotalAmount.textContent = `$${grandTotal.toFixed(2)}`;
+            } else {
+                if (emptyStateEl) emptyStateEl.style.display = 'block';
+                summaryTotalAmount.textContent = '$0.00';
+            }
+        }
+
+        // Cancel button interaction: navigate back to event details
+        if (btnCancelBooking) {
+            btnCancelBooking.addEventListener('click', (e) => {
+                if (!btnCancelBooking.getAttribute('href') || btnCancelBooking.getAttribute('href') === '#') {
+                    e.preventDefault();
+                    if (window.history.length > 1) {
+                        window.history.back();
+                    } else {
+                        window.location.href = '/events/1/';
+                    }
+                }
+            });
+        }
+
+        // Continue to payment button interaction
+        if (btnContinuePayment) {
+            btnContinuePayment.addEventListener('click', () => {
+                let totalTickets = 0;
+                Object.values(ticketState).forEach(item => totalTickets += item.qty);
+
+                if (totalTickets === 0) {
+                    showToast('Please select at least 1 ticket to proceed.', 'error');
+                    return;
+                }
+
+                const totalStr = summaryTotalAmount ? summaryTotalAmount.textContent : '$0.00';
+                showToast(`Proceeding to payment (${totalStr})... Reserving your spots!`, 'success');
+            });
+        }
+
+        // Initial summary render
+        recalculateSummary();
+    }
+
+    // --- Stallfair Ticket Wallet (myticket.html) & My Tickets Nav Handler ---
+    const ticketNavItems = document.querySelectorAll('.ticket-item');
+    ticketNavItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            // If already on myticket page, let it be or smooth scroll
+            if (window.location.pathname.includes('/myticket')) {
+                return;
+            }
+            e.preventDefault();
+            window.location.href = '/myticket/';
+        });
+    });
+
+    const walletTabPills = document.querySelectorAll('.wallet-tab-pill');
+    const viewUpcoming = document.getElementById('view-upcoming');
+    const viewPast = document.getElementById('view-past');
+
+    if (walletTabPills.length > 0) {
+        walletTabPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                walletTabPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+
+                const targetTab = pill.getAttribute('data-tab');
+                if (targetTab === 'upcoming') {
+                    if (viewUpcoming) viewUpcoming.style.display = 'block';
+                    if (viewPast) viewPast.style.display = 'none';
+                    showToast('Showing upcoming event tickets (3).', 'success');
+                } else if (targetTab === 'past') {
+                    if (viewUpcoming) viewUpcoming.style.display = 'none';
+                    if (viewPast) viewPast.style.display = 'block';
+                    showToast('Showing past event tickets.', 'success');
+                }
+            });
+        });
+
+        const walletTicketCards = document.querySelectorAll('.wallet-ticket-card');
+        walletTicketCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const title = card.querySelector('.ticket-event-heading')?.textContent.trim() || 'Ticket';
+                showToast(`Viewing digital pass for ${title}! Present at entrance.`, 'success');
+            });
         });
     }
 
