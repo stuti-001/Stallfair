@@ -1051,4 +1051,98 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Profile Form Handler
+  const profileForm = document.getElementById('profile-form');
+  if (profileForm) {
+    profileForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const fullnameInput = document.getElementById('profile-fullname');
+      const emailInput = document.getElementById('profile-email');
+      const phoneInput = document.getElementById('profile-phone');
+      const cityInput = document.getElementById('profile-city');
+      const saveBtn = document.getElementById('btn-save-profile');
+
+      const fullname = fullnameInput ? fullnameInput.value.trim() : '';
+      const email = emailInput ? emailInput.value.trim() : '';
+      const phone = phoneInput ? phoneInput.value.trim() : '';
+      const city = cityInput ? cityInput.value.trim() : '';
+
+      if (!fullname) {
+        showToast('Please enter your full name.', 'error');
+        return;
+      }
+      if (!email) {
+        showToast('Please enter your email address.', 'error');
+        return;
+      }
+
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(email) || email.includes('..') || email.startsWith('.') || email.endsWith('.')) {
+        showToast('Invalid email address format (e.g. name@example.com).', 'error');
+        return;
+      }
+
+      const csrfTokenInput = profileForm.querySelector('[name=csrfmiddlewaretoken]');
+      const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
+
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+      }
+
+      const postData = {
+        fullname: fullname,
+        email: email,
+        phone: phone,
+        city: city
+      };
+
+      const actionUrl = profileForm.getAttribute('action') || window.location.pathname;
+
+      fetch(actionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams(postData)
+      })
+      .then(async (response) => {
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+        const data = isJson ? await response.json() : null;
+        if (!response.ok) {
+          const errorMsg = data?.error || `Server returned error (${response.status}).`;
+          throw new Error(errorMsg);
+        }
+        return data;
+      })
+      .then((data) => {
+        if (data && data.success) {
+          showToast(data.message || 'Profile updated successfully!', 'success');
+          const displayProfileName = document.getElementById('display-profile-name');
+          if (displayProfileName && data.fullname) {
+            displayProfileName.textContent = data.fullname;
+          }
+          const avatarInitial = document.querySelector('.profile-avatar-initial');
+          if (avatarInitial && data.fullname) {
+            avatarInitial.textContent = data.fullname.charAt(0).toUpperCase();
+          }
+        } else {
+          showToast(data?.error || 'Failed to update profile.', 'error');
+        }
+      })
+      .catch((err) => {
+        showToast(err.message || 'An unexpected error occurred.', 'error');
+      })
+      .finally(() => {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Save changes';
+        }
+      });
+    });
+  }
+
 });

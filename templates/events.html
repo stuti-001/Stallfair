@@ -32,7 +32,7 @@
           </a>
           <span class="nav-separator"></span>
 
-          <a href="{% url 'login' %}" class="nav-item">Profile</a>
+          <a href="{% url 'user_profile' %}" class="nav-item">Profile</a>
           {% if user.is_authenticated %}
           <a href="{% url 'logout' %}" class="nav-item nav-btn-login">Log out</a>
           {% else %}
@@ -232,6 +232,29 @@
 
           <!-- Vertical Events List -->
           <div class="events-list" id="events-list">
+            {% for evt in events %}
+            <div
+              class="event-row"
+              data-id="{{ evt.id }}"
+              data-location="{{ evt.location|lower }}"
+              data-date="{% if 'sat' in evt.date|lower %}sat{% elif 'sun' in evt.date|lower %}sun{% elif 'fri' in evt.date|lower %}fri{% else %}all{% endif %}"
+              data-category="{% if 'vintage' in evt.category|lower or 'music' in evt.category|lower %}vintage{% elif 'noodle' in evt.category|lower or 'street' in evt.category|lower %}street-food{% elif 'craft' in evt.category|lower %}craft{% else %}food{% endif %}"
+              data-price="{{ evt.price|cut:'$'|cut:'+'|cut:'.00'|default:'12' }}"
+            >
+              <span class="event-number">{{ forloop.counter|stringformat:"02d" }}</span>
+              <div class="event-color-block {% if evt.color == 'teal' %}block-teal{% elif evt.color == 'orange' %}block-orange{% elif evt.color == 'salmon' %}block-salmon{% else %}block-gradient-gold{% endif %}"></div>
+              <div class="event-details">
+                <h3 class="event-title">{{ evt.title }}</h3>
+                <p class="event-meta">
+                  {{ evt.location }} &nbsp;·&nbsp; {{ evt.date }}, {{ evt.time }} &nbsp;·&nbsp; {{ evt.category }}
+                </p>
+              </div>
+              <div class="event-dots-spacer"></div>
+              <div class="event-price-wrapper">
+                <span class="event-price">{{ evt.price|default:"$12+" }}</span>
+              </div>
+            </div>
+            {% empty %}
             <!-- Event 01 -->
             <div
               class="event-row"
@@ -326,6 +349,7 @@
                 <span class="event-price">$5+</span>
               </div>
             </div>
+            {% endfor %}
 
             <!-- No Events Message -->
             <div

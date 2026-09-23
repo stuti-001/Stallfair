@@ -4,11 +4,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stallfair - Sunrise Farmers Market</title>
+  <title>Stallfair - {{ event.title|default:"Event Details" }}</title>
   <!-- CSS Link -->
-  <link rel="stylesheet" href="{% static 'style.css' %}" />
+  <link rel="stylesheet" href="{% static 'style.css' %}?v=2.0" />
   <!-- JS Link -->
-  <script defer src="{% static 'script.js' %}"></script>
+  <script defer src="{% static 'script.js' %}?v=2.0"></script>
 </head>
 
   <body class="home-body">
@@ -32,7 +32,7 @@
           </a>
           <span class="nav-separator"></span>
 
-          <a href="{% url 'login' %}" class="nav-item">Profile</a>
+          <a href="{% url 'user_profile' %}" class="nav-item">Profile</a>
           {% if user.is_authenticated %}
           <a href="{% url 'logout' %}" class="nav-item nav-btn-login">Log out</a>
           {% else %}
@@ -56,18 +56,18 @@
               <!-- Main Polaroid Card -->
               <div class="details-polaroid-container">
                 <div class="polaroid-tape-graphic"></div>
-                <div class="polaroid-large-display block-gradient-gold" id="details-main-display"></div>
+                <div class="polaroid-large-display {% if event.color == 'teal' %}block-teal{% elif event.color == 'orange' %}block-orange{% elif event.color == 'salmon' %}block-salmon{% else %}block-gradient-gold{% endif %}" id="details-main-display"></div>
               </div>
 
               <!-- Thumbnails -->
               <div class="details-thumbnails-row">
-                <button class="thumbnail-choice-btn active" data-color="gold" aria-label="Select gold view">
+                <button class="thumbnail-choice-btn {% if event.color == 'gold' or not event.color %}active{% endif %}" data-color="gold" aria-label="Select gold view">
                   <span class="thumbnail-block block-gradient-gold"></span>
                 </button>
-                <button class="thumbnail-choice-btn" data-color="teal" aria-label="Select teal view">
+                <button class="thumbnail-choice-btn {% if event.color == 'teal' %}active{% endif %}" data-color="teal" aria-label="Select teal view">
                   <span class="thumbnail-block block-teal"></span>
                 </button>
-                <button class="thumbnail-choice-btn" data-color="orange" aria-label="Select orange view">
+                <button class="thumbnail-choice-btn {% if event.color == 'orange' %}active{% endif %}" data-color="orange" aria-label="Select orange view">
                   <span class="thumbnail-block block-orange"></span>
                 </button>
               </div>
@@ -76,25 +76,25 @@
             <!-- Right Column: Information details -->
             <div class="event-info-column">
               <div class="event-category-container">
-                <span class="category-detail-pill">📦 Food & Produce</span>
+                <span class="category-detail-pill">{{ event.category_icon|default:"📦" }} {{ event.category }}</span>
               </div>
 
-              <h1 class="event-detail-title">Sunrise Farmers Market</h1>
+              <h1 class="event-detail-title">{{ event.title }}</h1>
 
               <p class="event-detail-description">
-                Forty local growers, a coffee cart, and the season's best produce — every Saturday morning on the Riverside Green. Bring a tote.
+                {{ event.description }}
               </p>
 
               <!-- Event badges (Date, Time, Location) -->
               <div class="event-info-badges">
                 <span class="info-badge-item badge-bg-teal">
-                  <span class="badge-emoji">📅</span> Sat, 9 Aug
+                  <span class="badge-emoji">📅</span> {{ event.date }}
                 </span>
                 <span class="info-badge-item badge-bg-teal">
-                  <span class="badge-emoji">⏰</span> 7:00-11:00am
+                  <span class="badge-emoji">⏰</span> {{ event.time }}
                 </span>
                 <span class="info-badge-item badge-bg-teal">
-                  <span class="badge-emoji">📍</span> Riverside Green
+                  <span class="badge-emoji">📍</span> {{ event.location }}
                 </span>
               </div>
 
@@ -102,10 +102,13 @@
               <div class="stallholders-showcase">
                 <h2 class="stallholders-section-title">Stallholders featured</h2>
                 <div class="stallholders-pills-list">
-                  <span class="stallholder-pill-item">Root & Bloom Farm</span>
-                  <span class="stallholder-pill-item">Kettle & Bean</span>
-                  <span class="stallholder-pill-item">Honest Loaf Co.</span>
-                  <span class="stallholder-pill-item">+37 more</span>
+                  {% for stall in event.stallholders %}
+                  <span class="stallholder-pill-item">{{ stall }}</span>
+                  {% empty %}
+                  <span class="stallholder-pill-item">Featured Vendors</span>
+                  <span class="stallholder-pill-item">Artisan Makers</span>
+                  <span class="stallholder-pill-item">+20 more</span>
+                  {% endfor %}
                 </div>
               </div>
             </div>
@@ -115,12 +118,12 @@
           <div class="details-booking-banner">
             <div class="booking-banner-left">
               <span class="booking-label">FROM</span>
-              <span class="booking-price">$12.00</span>
+              <span class="booking-price">{{ event.price|default:"$12.00" }}</span>
             </div>
             <div class="booking-banner-right">
-              <button class="btn-retro-booking" id="btn-get-tickets">
+              <a href="{% url 'ticketbooking_with_id' event.id %}" class="btn-retro-booking" id="btn-get-tickets">
                 Get tickets <span class="booking-btn-arrow">→</span>
-              </button>
+              </a>
             </div>
           </div>
         </section>

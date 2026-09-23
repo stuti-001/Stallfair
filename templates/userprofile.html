@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+  {% load static %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stallfair - User Profile</title>
+    <!-- CSS Link with Cache Buster -->
+    <link rel="stylesheet" href="{% static 'style.css' %}?v=2.0" />
+    <!-- JS Link -->
+    <script defer src="{% static 'script.js' %}?v=2.0"></script>
+
+    <style>
+      /* Profile Page Direct Styles */
+      body.profile-body {
+          display: block;
+          min-height: 100vh;
+          background-color: #f6efe1;
+          background-image: radial-gradient(rgba(180, 150, 115, 0.28) 1.5px, transparent 1.5px);
+          background-size: 20px 20px;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          color: var(--color-text-dark, #2e1a08);
+          margin: 0;
+          padding: 0;
+      }
+
+      .profile-wrapper {
+          width: 100%;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+      }
+
+      .profile-main-section {
+          padding: 56px 48px 80px;
+          max-width: 1180px;
+          width: 100%;
+          margin: 0 auto;
+          box-sizing: border-box;
+      }
+
+      .profile-layout-grid {
+          display: grid;
+          grid-template-columns: 340px 1fr;
+          gap: 40px;
+          align-items: start;
+      }
+
+      /* Left Overview Card */
+      .profile-user-card {
+          background-color: #ffffff;
+          border-radius: 28px;
+          border: 1.5px solid #eae2cf;
+          padding: 56px 36px 48px;
+          text-align: center;
+          box-shadow: 0 4px 24px rgba(46, 26, 8, 0.04);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+      }
+
+      .profile-avatar-wrapper {
+          margin-bottom: 24px;
+          display: flex;
+          justify-content: center;
+      }
+
+      .profile-avatar-circle {
+          width: 106px;
+          height: 106px;
+          border-radius: 50%;
+          background-color: #df9637;
+          box-shadow: 0 0 0 5px #ffffff, 0 0 0 7.5px #df9637;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          user-select: none;
+      }
+
+      .profile-avatar-initial {
+          font-family: 'Lora', serif;
+          font-size: 2.4rem;
+          font-weight: 700;
+          color: rgba(255, 255, 255, 0.95);
+          line-height: 1;
+      }
+
+      .profile-user-name {
+          font-family: 'Lora', serif;
+          font-size: 1.6rem;
+          font-weight: 700;
+          color: #2e1a08;
+          margin-bottom: 12px;
+          letter-spacing: -0.01em;
+      }
+
+      .profile-member-since {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.88rem;
+          font-weight: 500;
+          color: #8a7765;
+          letter-spacing: 0.02em;
+      }
+
+      /* Right Column: Form Card */
+      .profile-content-column {
+          display: flex;
+          flex-direction: column;
+      }
+
+      .profile-form-card {
+          background-color: #ffffff;
+          border-radius: 28px;
+          border: 1.5px solid #eae2cf;
+          padding: 44px 48px;
+          box-shadow: 0 4px 24px rgba(46, 26, 8, 0.04);
+      }
+
+      .profile-fields-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 28px 32px;
+          margin-bottom: 32px;
+      }
+
+      .profile-form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+      }
+
+      .profile-field-label {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.78rem;
+          font-weight: 600;
+          color: #7c6a5a;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+      }
+
+      .profile-field-input {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.95rem;
+          color: #2e1a08;
+          background-color: #fffdfa;
+          border: 1.5px solid #d8cca8;
+          border-radius: 12px;
+          padding: 13px 18px;
+          width: 100%;
+          box-sizing: border-box;
+          outline: none;
+          transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .profile-field-input:focus {
+          border-color: #c4452e;
+          box-shadow: 0 0 0 3.5px rgba(196, 69, 46, 0.12);
+      }
+
+      .profile-field-input::placeholder {
+          color: #b0a08f;
+      }
+
+      .profile-form-actions {
+          display: flex;
+          justify-content: flex-start;
+      }
+
+      .btn-profile-save {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 1rem;
+          font-weight: 700;
+          color: #ffffff;
+          background-color: #c4452e;
+          border: none;
+          border-radius: 14px;
+          padding: 14px 34px;
+          cursor: pointer;
+          box-shadow: 0 5px 0 #8b2b1a;
+          transition: all 0.15s ease;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+      }
+
+      .btn-profile-save:hover {
+          background-color: #b33d27;
+          transform: translateY(-1px);
+          box-shadow: 0 6px 0 #8b2b1a;
+      }
+
+      .btn-profile-save:active {
+          transform: translateY(3px);
+          box-shadow: 0 2px 0 #8b2b1a;
+      }
+
+      .profile-alert {
+          padding: 12px 18px;
+          border-radius: 12px;
+          font-size: 0.92rem;
+          font-weight: 600;
+          margin-bottom: 24px;
+      }
+
+      .profile-alert-error {
+          background-color: #fde8e5;
+          color: #b8331d;
+          border: 1px solid #f8bebe;
+      }
+
+      .profile-alert-success {
+          background-color: #e6f4ea;
+          color: #1b633e;
+          border: 1px solid #bce1c8;
+      }
+
+      @media (max-width: 960px) {
+          .profile-layout-grid {
+              grid-template-columns: 1fr;
+              gap: 32px;
+          }
+
+          .profile-main-section {
+              padding: 36px 24px 60px;
+          }
+      }
+
+      @media (max-width: 640px) {
+          .profile-fields-grid {
+              grid-template-columns: 1fr;
+              gap: 20px;
+          }
+
+          .profile-form-card {
+              padding: 30px 24px;
+          }
+
+          .profile-user-card {
+              padding: 40px 24px;
+          }
+      }
+    </style>
+  </head>
+
+  <body class="home-body profile-body">
+    <div class="home-wrapper profile-wrapper">
+      <!-- Navigation Header -->
+      <header class="home-navbar">
+        <a href="{% url 'home' %}" class="nav-left">
+          <span class="nav-logo-dot">●</span>
+          <span class="nav-logo-text">Stallfair</span>
+        </a>
+        <nav class="nav-right">
+          <a href="{% url 'home' %}" class="nav-item">Home</a>
+          <span class="nav-separator"></span>
+
+          <a href="{% url 'event_list' %}" class="nav-item">Events</a>
+          <span class="nav-separator"></span>
+
+          <a href="{% url 'my_tickets' %}" class="nav-item ticket-item">
+            My Tickets
+            <span class="ticket-badge">3</span>
+          </a>
+          <span class="nav-separator"></span>
+
+          <a href="{% url 'user_profile' %}" class="nav-item active">Profile</a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'logout' %}" class="nav-item nav-btn-login">Log out</a>
+          {% else %}
+          <a href="{% url 'login' %}" class="nav-item nav-btn-login">Log in</a>
+          {% endif %}
+        </nav>
+      </header>
+
+      <!-- Main Profile Content -->
+      <main class="profile-main-section">
+        <div class="profile-layout-grid">
+          
+          <!-- Left Column: User Overview Card -->
+          <aside class="profile-user-card">
+            <div class="profile-avatar-wrapper">
+              <div class="profile-avatar-circle" aria-label="User Avatar">
+                <span class="profile-avatar-initial">{{ user.first_name|first|default:user.username|first|upper }}</span>
+              </div>
+            </div>
+            <h2 class="profile-user-name" id="display-profile-name">
+              {% if user.get_full_name %}
+                {{ user.get_full_name }}
+              {% else %}
+                {{ user.username }}
+              {% endif %}
+            </h2>
+            <p class="profile-member-since">
+              Member since {{ user.date_joined|date:"M Y"|default:"Mar 2025" }}
+            </p>
+          </aside>
+
+          <!-- Right Column: Profile Form Details -->
+          <section class="profile-content-column">
+            <!-- Form Card -->
+            <div class="profile-form-card">
+              {% if error %}
+              <div class="profile-alert profile-alert-error" role="alert">
+                {{ error }}
+              </div>
+              {% endif %}
+              {% if success %}
+              <div class="profile-alert profile-alert-success" role="status">
+                {{ success }}
+              </div>
+              {% endif %}
+
+              <form method="POST" action="{% url 'user_profile' %}" id="profile-form" class="profile-details-form">
+                {% csrf_token %}
+                <div class="profile-fields-grid">
+                  
+                  <!-- Full Name Field -->
+                  <div class="profile-form-group">
+                    <label for="profile-fullname" class="profile-field-label">FULL NAME</label>
+                    <input 
+                      type="text" 
+                      id="profile-fullname" 
+                      name="fullname" 
+                      class="profile-field-input" 
+                      value="{% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}" 
+                      placeholder="Stuti Sharma" 
+                      required 
+                    />
+                  </div>
+
+                  <!-- Email Field -->
+                  <div class="profile-form-group">
+                    <label for="profile-email" class="profile-field-label">EMAIL</label>
+                    <input 
+                      type="email" 
+                      id="profile-email" 
+                      name="email" 
+                      class="profile-field-input" 
+                      value="{{ user.email }}" 
+                      placeholder="stuti@mail.com" 
+                      required 
+                    />
+                  </div>
+
+                  <!-- Phone Field -->
+                  <div class="profile-form-group">
+                    <label for="profile-phone" class="profile-field-label">PHONE</label>
+                    <input 
+                      type="tel" 
+                      id="profile-phone" 
+                      name="phone" 
+                      class="profile-field-input" 
+                      value="{{ phone|default:'+977 98••••120' }}" 
+                      placeholder="+977 98••••120" 
+                    />
+                  </div>
+
+                  <!-- City Field -->
+                  <div class="profile-form-group">
+                    <label for="profile-city" class="profile-field-label">CITY</label>
+                    <input 
+                      type="text" 
+                      id="profile-city" 
+                      name="city" 
+                      class="profile-field-input" 
+                      value="{{ city|default:'Kathmandu' }}" 
+                      placeholder="Kathmandu" 
+                    />
+                  </div>
+
+                </div>
+
+                <!-- Form Action Button -->
+                <div class="profile-form-actions">
+                  <button type="submit" class="btn-profile-save" id="btn-save-profile">
+                    Save changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

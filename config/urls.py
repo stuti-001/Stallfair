@@ -41,6 +41,9 @@ urlpatterns = [
     path("myticket/", views.my_tickets, name="my_tickets"),
     path("my-tickets/", views.my_tickets, name="my_tickets_alias"),
     path("mytickets/", views.my_tickets, name="mytickets_alias"),
+    path("userprofile/", views.user_profile, name="user_profile"),
+    path("profile/", views.user_profile, name="profile"),
+    path("user-profile/", views.user_profile, name="user_profile_alias"),
 ]
 
 if settings.DEBUG:

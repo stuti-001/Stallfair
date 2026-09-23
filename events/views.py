@@ -39,21 +39,121 @@ def create_event(request):
     return render(request, "event-management.html")
 
 
+CATALOG_EVENTS = {
+    1: {
+        "id": 1,
+        "title": "Sunrise Farmers Market",
+        "category": "Food & Produce",
+        "category_icon": "📦",
+        "description": "Forty local growers, a coffee cart, and the season's best produce — every Saturday morning on the Riverside Green. Bring a tote.",
+        "date": "Sat, 9 Aug",
+        "time": "7:00-11:00am",
+        "location": "Riverside Green",
+        "price": "$12.00",
+        "color": "gold",
+        "stallholders": ["Root & Bloom Farm", "Kettle & Bean", "Honest Loaf Co.", "+37 more"]
+    },
+    2: {
+        "id": 2,
+        "title": "Vintage Vinyl Swap",
+        "category": "Vintage & Music",
+        "category_icon": "🎵",
+        "description": "Crate digging, live DJs, and vintage audio gear swap. Find rare pressings and classic records from 20+ specialized collectors.",
+        "date": "Sun, 10 Aug",
+        "time": "12:00-6:00pm",
+        "location": "The Old Depot",
+        "price": "$8.00",
+        "color": "teal",
+        "stallholders": ["Groove Collector", "Analog Dreams", "Retro Wax", "+15 more"]
+    },
+    3: {
+        "id": 3,
+        "title": "Night Noodle Bazaar",
+        "category": "Street Food",
+        "category_icon": "🍜",
+        "description": "Sizzling woks, steaming bowls of hand-pulled noodles, dumplings, and lantern-lit stalls along the pier under the night sky.",
+        "date": "Fri, 15 Aug",
+        "time": "6:00-11:00pm",
+        "location": "Pier 9",
+        "price": "$15.00",
+        "color": "orange",
+        "stallholders": ["Wok Master", "Bao Bros", "Silk Road Spices", "+22 more"]
+    },
+    4: {
+        "id": 4,
+        "title": "Handmade Paper & Craft Fair",
+        "category": "Craft",
+        "category_icon": "🎨",
+        "description": "Artisan stationery, botanical paper prints, bookbinding demonstrations, and sustainable craft supplies from local makers.",
+        "date": "Sun, 17 Aug",
+        "time": "10:00am-5:00pm",
+        "location": "Baghbazar Courtyard",
+        "price": "$5.00",
+        "color": "salmon",
+        "stallholders": ["Lokta Press", "Petal & Pulp", "Craft Guild", "+18 more"]
+    }
+}
+
+
+def get_event_by_id(id):
+    try:
+        event_id = int(id)
+    except (ValueError, TypeError):
+        return None
+
+    try:
+        db_event = Event.objects.get(id=event_id)
+        cat_lower = (db_event.category or "").lower()
+        if "food" in cat_lower or "produce" in cat_lower:
+            icon = "📦"
+            color = "gold"
+        elif "vintage" in cat_lower or "music" in cat_lower:
+            icon = "🎵"
+            color = "teal"
+        elif "noodle" in cat_lower or "street" in cat_lower:
+            icon = "🍜"
+            color = "orange"
+        elif "craft" in cat_lower or "art" in cat_lower:
+            icon = "🎨"
+            color = "salmon"
+        else:
+            icon = "🎟️"
+            color = "gold"
+
+        date_str = db_event.date.strftime("%a, %d %b") if hasattr(db_event.date, 'strftime') else str(db_event.date)
+        time_str = db_event.time.strftime("%I:%M %p").lstrip("0") if hasattr(db_event.time, 'strftime') else str(db_event.time or "TBD")
+
+        return {
+            "id": db_event.id,
+            "title": db_event.title,
+            "category": db_event.category or "General Event",
+            "category_icon": icon,
+            "description": db_event.description or "Join us for this exciting local event featuring community stalls, local makers, and unique experiences.",
+            "date": date_str,
+            "time": time_str,
+            "location": db_event.location or "Kathmandu",
+            "price": "$12.00",
+            "color": color,
+            "stallholders": ["Featured Stalls", "Local Vendors", "Craft Artisans", "+15 more"]
+        }
+    except Event.DoesNotExist:
+        return CATALOG_EVENTS.get(event_id, CATALOG_EVENTS.get(1))
+
+
 def event_list(request):
-    event = Event.objects.all()
+    db_events = Event.objects.all()
+    if db_events.exists():
+        events_data = [get_event_by_id(e.id) for e in db_events]
+    else:
+        events_data = list(CATALOG_EVENTS.values())
 
-    return render(request, 'events.html',
-                  {'events': event})
-
+    return render(request, 'events.html', {'events': events_data})
 
 
 def event_detail(request, id):
-    # Try to fetch the requested event; if it doesn't exist, render
-    # the details page with a None event so the page still works.
-    try:
-        event_obj = Event.objects.get(id=id)
-    except Event.DoesNotExist:
-        event_obj = None
+    event_obj = get_event_by_id(id)
+    if not event_obj:
+        event_obj = CATALOG_EVENTS[1]
 
     return render(request, "event-details.html", {'event': event_obj})
 
@@ -62,12 +162,9 @@ def event_detail(request, id):
 def ticket_booking(request, id=None):
     event_obj = None
     if id:
-        try:
-            event_obj = Event.objects.get(id=id)
-        except Event.DoesNotExist:
-            event_obj = None
+        event_obj = get_event_by_id(id)
     if not event_obj:
-        event_obj = Event.objects.first()
+        event_obj = CATALOG_EVENTS[1]
 
     return render(request, "ticketbooking.html", {'event': event_obj})
 
@@ -282,4 +379,69 @@ def logout_view(request):
 @login_required(login_url='login')
 def organizer_dashboard(request):
     return render(request, "organizer-dashboard.html")
+
+
+@login_required(login_url='login')
+def user_profile(request):
+    user = request.user
+    if request.method == "POST":
+        fullname = request.POST.get("fullname", "").strip()
+        email = request.POST.get("email", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        city = request.POST.get("city", "").strip()
+
+        if not fullname:
+            error_msg = "Please enter your full name."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"success": False, "error": error_msg})
+            return render(request, "userprofile.html", {"error": error_msg, "user": user, "phone": phone, "city": city})
+
+        if not email:
+            error_msg = "Please enter your email address."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"success": False, "error": error_msg})
+            return render(request, "userprofile.html", {"error": error_msg, "user": user, "phone": phone, "city": city})
+
+        # Validate email format
+        email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_regex, email) or ".." in email or email.startswith(".") or email.endswith("."):
+            error_msg = "Invalid email address format (e.g. name@example.com)."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"success": False, "error": error_msg})
+            return render(request, "userprofile.html", {"error": error_msg, "user": user, "phone": phone, "city": city})
+
+        try:
+            validate_email(email)
+        except ValidationError:
+            error_msg = "Invalid email address format (e.g. name@example.com)."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"success": False, "error": error_msg})
+            return render(request, "userprofile.html", {"error": error_msg, "user": user, "phone": phone, "city": city})
+
+        # Prevent duplicate email if another user already has it
+        if User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists() or User.objects.filter(username__iexact=email).exclude(pk=user.pk).exists():
+            error_msg = "An account with this email address already exists."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"success": False, "error": error_msg})
+            return render(request, "userprofile.html", {"error": error_msg, "user": user, "phone": phone, "city": city})
+
+        name_parts = fullname.split(' ', 1)
+        user.first_name = name_parts[0]
+        user.last_name = name_parts[1] if len(name_parts) > 1 else ""
+        user.email = email
+        user.username = email
+        user.save()
+
+        success_msg = "Profile updated successfully!"
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                "success": True, 
+                "message": success_msg, 
+                "fullname": user.get_full_name() or user.username, 
+                "email": user.email
+            })
+        return render(request, "userprofile.html", {"success": success_msg, "user": user, "phone": phone, "city": city})
+
+    return render(request, "userprofile.html", {"user": user})
+
 

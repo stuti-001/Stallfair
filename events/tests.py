@@ -224,6 +224,23 @@ class AuthenticationTests(TestCase):
         self.assertFalse(data["success"])
         self.assertIn("Password must be at least 8 characters long.", data["error"])
 
+    def test_signup_allows_common_password(self):
+        response = self.client.post(
+            self.signup_url,
+            {
+                "action": "signup",
+                "fullname": "Common User",
+                "email": "commonpass@stallfair.com",
+                "password": "password123",
+                "confirm_password": "password123",
+            },
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        )
+        data = response.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["message"], "Account created successfully! You can now log in.")
+
+
     def test_login_nonexistent_email(self):
         response = self.client.post(
             self.login_url,
@@ -390,6 +407,89 @@ class AuthenticationTests(TestCase):
         self.assertEqual(auth_response.status_code, 200)
         self.assertTemplateUsed(auth_response, "ticketbooking.html")
         self.assertContains(auth_response, "Choose your tickets")
+
+    def test_user_profile_requires_login(self):
+        # 1. Unauthenticated access to user profile redirects to login
+        unauth_response = self.client.get(reverse("user_profile"))
+        self.assertRedirects(unauth_response, f"{reverse('login')}?next={reverse('user_profile')}")
+
+        unauth_alias = self.client.get(reverse("profile"))
+        self.assertRedirects(unauth_alias, f"{reverse('login')}?next={reverse('profile')}")
+
+    def test_user_profile_authenticated_and_update(self):
+        # 1. Create and log in user
+        user = User.objects.create_user(
+            username="profileuser@stallfair.com",
+            email="profileuser@stallfair.com",
+            password="Password123!",
+            first_name="Stuti",
+            last_name="Sharma"
+        )
+        self.client.force_login(user)
+
+        # 2. Authenticated user can view their profile
+        response = self.client.get(reverse("user_profile"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "userprofile.html")
+        self.assertContains(response, "Stuti Sharma")
+        self.assertContains(response, "profileuser@stallfair.com")
+        self.assertContains(response, "Save changes")
+        # Ensure removed items from prompt are NOT present
+        self.assertNotContains(response, "Details")
+        self.assertNotContains(response, "Saved Events")
+        self.assertNotContains(response, "Order History")
+        self.assertNotContains(response, "Collector badge")
+
+        # 3. User can update profile via AJAX
+        update_response = self.client.post(
+            reverse("user_profile"),
+            {
+                "fullname": "Stuti Newname",
+                "email": "updated_email@stallfair.com",
+                "phone": "+977 9800000000",
+                "city": "Pokhara"
+            },
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest"
+        )
+        data = update_response.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["message"], "Profile updated successfully!")
+
+        user.refresh_from_db()
+        self.assertEqual(user.first_name, "Stuti")
+        self.assertEqual(user.last_name, "Newname")
+        self.assertEqual(user.email, "updated_email@stallfair.com")
+
+    def test_specific_event_details_rendering(self):
+        # 1. Test Event 1 details
+        resp1 = self.client.get(reverse("event_detail", kwargs={"id": 1}))
+        self.assertEqual(resp1.status_code, 200)
+        self.assertContains(resp1, "Sunrise Farmers Market")
+        self.assertContains(resp1, "Food & Produce")
+        self.assertContains(resp1, "Riverside Green")
+
+        # 2. Test Event 2 details
+        resp2 = self.client.get(reverse("event_detail", kwargs={"id": 2}))
+        self.assertEqual(resp2.status_code, 200)
+        self.assertContains(resp2, "Vintage Vinyl Swap")
+        self.assertContains(resp2, "Vintage & Music")
+        self.assertContains(resp2, "The Old Depot")
+
+        # 3. Test Event 3 details
+        resp3 = self.client.get(reverse("event_detail", kwargs={"id": 3}))
+        self.assertEqual(resp3.status_code, 200)
+        self.assertContains(resp3, "Night Noodle Bazaar")
+        self.assertContains(resp3, "Street Food")
+        self.assertContains(resp3, "Pier 9")
+
+        # 4. Test Event 4 details
+        resp4 = self.client.get(reverse("event_detail", kwargs={"id": 4}))
+        self.assertEqual(resp4.status_code, 200)
+        self.assertContains(resp4, "Handmade Paper & Craft Fair")
+        self.assertContains(resp4, "Craft")
+        self.assertContains(resp4, "Baghbazar Courtyard")
+
+
 
 
 

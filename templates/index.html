@@ -32,7 +32,7 @@
           </a>
           <span class="nav-separator"></span>
 
-        <a href="{% url 'login' %}" class="nav-item">Profile</a>
+        <a href="{% url 'user_profile' %}" class="nav-item">Profile</a>
         {% if user.is_authenticated %}
         <a href="{% url 'logout' %}" class="nav-item nav-btn-login">Log out</a>
         {% else %}
