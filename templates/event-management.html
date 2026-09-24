@@ -20,7 +20,6 @@
             <span class="nav-logo-dot">●</span>
             <span class="nav-logo-text">Stallfair</span>
           </div>
-          <span class="nav-logo-sub">ORGANIZER DESK</span>
         </div>
       </a>
       <nav class="nav-center">
@@ -96,13 +95,16 @@
               <span class="editing-pill" id="editing-badge-text">Editing · Sunrise Farmers Market</span>
             </div>
 
-            <form id="event-editor-form" class="editor-form" onsubmit="return false;">
+            {{ existing_events|json_script:"server-events-data" }}
+            <form id="event-editor-form" class="editor-form" method="POST" action="{% url 'create_event' %}">
+              {% csrf_token %}
               <!-- Event Title Input -->
               <div class="input-group-field">
                 <label for="editor-title">EVENT TITLE</label>
                 <input
                   type="text"
                   id="editor-title"
+                  name="title"
                   class="editor-input"
                   value="Sunrise Farmers Market"
                   required
@@ -116,6 +118,7 @@
                   <input
                     type="text"
                     id="editor-date"
+                    name="date"
                     class="editor-input"
                     value="Sat, 9 Aug"
                     required
@@ -126,6 +129,7 @@
                   <input
                     type="text"
                     id="editor-venue"
+                    name="location"
                     class="editor-input"
                     value="Riverside Green"
                     required
@@ -139,30 +143,52 @@
                 <input
                   type="text"
                   id="editor-description"
+                  name="description"
                   class="editor-input"
                   value="Forty local growers, a coffee cart, and the season's best produce..."
                   required
                 />
               </div>
 
+              <!-- Category and Time Row -->
+              <div class="editor-row">
+                <div class="input-group-field col-half">
+                  <label for="editor-category">CATEGORY</label>
+                  <select id="editor-category" name="category" class="editor-input editor-select" required>
+                    <option value="Food & Produce">Food &amp; Produce</option>
+                    <option value="Music & Vinyl">Music &amp; Vinyl</option>
+                    <option value="Art Happening">Art Happening</option>
+                    <option value="Storytelling">Storytelling</option>
+                    <option value="Tech">Tech</option>
+                    <option value="Craft">Craft</option>
+                    <option value="Vintage">Vintage</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Community & Workshop">Community &amp; Workshop</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="input-group-field col-half">
+                  <label for="editor-time">TIME</label>
+                  <input
+                    type="text"
+                    id="editor-time"
+                    name="time"
+                    class="editor-input"
+                    value="7:00-11:00am"
+                    placeholder="e.g. 7:00-11:00am"
+                    required
+                  />
+                </div>
+              </div>
+
               <!-- Ticket Tiers List -->
               <div class="ticket-tiers-container">
-                <h3 class="ticket-tiers-heading">Ticket tiers</h3>
+                <h3 class="ticket-tiers-heading">Ticket type</h3>
                 <div class="ticket-tiers-list" id="editor-ticket-tiers">
-                  <!-- General Entry -->
+                  <!-- General Ticket -->
                   <div class="ticket-tier-item">
-                    <span class="ticket-tier-name">General Entry</span>
+                    <span class="ticket-tier-name">General Ticket</span>
                     <span class="ticket-tier-price">$12.00</span>
-                  </div>
-                  <!-- Early Bird -->
-                  <div class="ticket-tier-item">
-                    <span class="ticket-tier-name">Early Bird</span>
-                    <span class="ticket-tier-price">$18.00</span>
-                  </div>
-                  <!-- Family Pass -->
-                  <div class="ticket-tier-item">
-                    <span class="ticket-tier-name">Family Pass</span>
-                    <span class="ticket-tier-price">$30.00</span>
                   </div>
                 </div>
               </div>

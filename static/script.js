@@ -743,24 +743,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const editorDateInput = document.getElementById('editor-date');
     const editorVenueInput = document.getElementById('editor-venue');
     const editorDescriptionInput = document.getElementById('editor-description');
+    const editorCategorySelect = document.getElementById('editor-category');
+    const editorTimeInput = document.getElementById('editor-time');
     const btnSubmitPublish = document.getElementById('btn-submit-publish');
     const btnSubmitDraft = document.getElementById('btn-submit-draft');
 
     if (eventCardsContainer) {
-        // Initial Mock Events Data State
-        const mockEvents = [
+        let mockEvents = [
             {
                 id: '1',
                 title: 'Sunrise Farmers Market',
                 status: 'Published',
                 date: 'Sat, 9 Aug',
+                time: '7:00-11:00am',
                 venue: 'Riverside Green',
+                category: 'Food & Produce',
                 description: 'Forty local growers, a coffee cart, and the season\'s best produce...',
                 pinColor: 'red',
                 tickets: [
-                    { name: 'General Entry', price: '$12.00' },
-                    { name: 'Early Bird', price: '$18.00' },
-                    { name: 'Family Pass', price: '$30.00' }
+                    { name: 'General Ticket', price: '$12.00' }
                 ]
             },
             {
@@ -768,12 +769,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: 'Craft Alley Pop-up',
                 status: 'Published',
                 date: 'Sat, 9 Aug',
+                time: '12:00-6:00pm',
                 venue: 'Riverside Green',
+                category: 'Craft',
                 description: 'Handmade pottery, local art, prints, apparel and small-batch crafts.',
                 pinColor: 'teal',
                 tickets: [
-                    { name: 'General Entry', price: '$5.00' },
-                    { name: 'Workshop Pass', price: '$25.00' }
+                    { name: 'General Ticket', price: '$5.00' }
                 ]
             },
             {
@@ -781,24 +783,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: 'Rooftop Cinema Night',
                 status: 'Draft',
                 date: 'unscheduled',
+                time: '6:00-11:00pm',
                 venue: 'TBD',
+                category: 'Art Happening',
                 description: 'Indie films under the stars. Bring your own blanket and snacks.',
                 pinColor: 'yellow',
                 tickets: [
-                    { name: 'General Entry', price: '$15.00' },
-                    { name: 'VIP Deckchair', price: '$25.00' }
+                    { name: 'General Ticket', price: '$15.00' }
                 ]
             }
         ];
 
-        let activeEventId = '1';
+        const serverEventsEl = document.getElementById('server-events-data');
+        if (serverEventsEl && serverEventsEl.textContent) {
+            try {
+                const parsedDbEvents = JSON.parse(serverEventsEl.textContent);
+                if (Array.isArray(parsedDbEvents) && parsedDbEvents.length > 0) {
+                    mockEvents = parsedDbEvents;
+                }
+            } catch (err) {
+                console.warn('Could not parse server events data:', err);
+            }
+        }
+
+        let activeEventId = mockEvents[0]?.id || '1';
 
         // Function to render ticket tiers list
         const renderTicketTiers = (tickets) => {
             const container = document.getElementById('editor-ticket-tiers');
             if (!container) return;
             container.innerHTML = '';
-            tickets.forEach((t) => {
+            
+            // Ensure only one General Ticket type is rendered
+            const ticketList = (tickets && tickets.length > 0) 
+                ? [{ name: 'General Ticket', price: tickets[0].price || '$10.00' }]
+                : [{ name: 'General Ticket', price: '$10.00' }];
+
+            ticketList.forEach((t) => {
                 const item = document.createElement('div');
                 item.className = 'ticket-tier-item';
                 
@@ -823,6 +844,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 priceInput.addEventListener('input', (e) => {
                     t.price = e.target.value;
+                    const activeEvt = mockEvents.find(evt => evt.id === activeEventId);
+                    if (activeEvt && activeEvt.tickets && activeEvt.tickets.length > 0) {
+                        activeEvt.tickets[0].price = e.target.value;
+                    }
                 });
                 
                 item.appendChild(nameSpan);
@@ -839,6 +864,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editorDateInput) editorDateInput.value = eventObj.date;
             if (editorVenueInput) editorVenueInput.value = eventObj.venue;
             if (editorDescriptionInput) editorDescriptionInput.value = eventObj.description;
+            if (editorCategorySelect) editorCategorySelect.value = eventObj.category || 'Food & Produce';
+            if (editorTimeInput) editorTimeInput.value = eventObj.time || '7:00-11:00am';
             renderTicketTiers(eventObj.tickets);
         };
 
@@ -851,7 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.setAttribute('data-id', evt.id);
 
                 const pin = document.createElement('span');
-                pin.className = `pin-dot pin-${evt.pinColor}`;
+                pin.className = `pin-dot pin-${evt.pinColor || 'red'}`;
                 
                 const cardBody = document.createElement('div');
                 cardBody.className = 'card-body';
@@ -862,7 +889,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const meta = document.createElement('p');
                 meta.className = 'card-meta';
-                const capitalizedStatus = evt.status.charAt(0).toUpperCase() + evt.status.slice(1);
+                const capitalizedStatus = evt.status ? (evt.status.charAt(0).toUpperCase() + evt.status.slice(1)) : 'Published';
                 meta.textContent = `${capitalizedStatus} · ${evt.date}`;
 
                 cardBody.appendChild(title);
@@ -894,6 +921,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editorDateInput) activeEvt.date = editorDateInput.value;
             if (editorVenueInput) activeEvt.venue = editorVenueInput.value;
             if (editorDescriptionInput) activeEvt.description = editorDescriptionInput.value;
+            if (editorCategorySelect) activeEvt.category = editorCategorySelect.value;
+            if (editorTimeInput) activeEvt.time = editorTimeInput.value;
 
             // Find matching card and update text content directly to avoid full rerender (preserves cursor focus)
             const activeCard = eventCardsContainer.querySelector(`.event-card[data-id="${activeEventId}"]`);
@@ -902,22 +931,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 const metaEl = activeCard.querySelector('.card-meta');
                 if (titleEl) titleEl.textContent = activeEvt.title;
                 if (metaEl) {
-                    const capitalizedStatus = activeEvt.status.charAt(0).toUpperCase() + activeEvt.status.slice(1);
+                    const capitalizedStatus = activeEvt.status ? (activeEvt.status.charAt(0).toUpperCase() + activeEvt.status.slice(1)) : 'Published';
                     metaEl.textContent = `${capitalizedStatus} · ${activeEvt.date}`;
                 }
             }
         };
 
-        [editorTitleInput, editorDateInput, editorVenueInput, editorDescriptionInput].forEach(input => {
+        [editorTitleInput, editorDateInput, editorVenueInput, editorDescriptionInput, editorCategorySelect, editorTimeInput].forEach(input => {
             if (input) {
                 input.addEventListener('input', updateActiveCardRealTime);
+                input.addEventListener('change', updateActiveCardRealTime);
             }
         });
 
         // "+ New event card" button handler
         if (btnNewCard) {
             btnNewCard.addEventListener('click', () => {
-                const newId = String(mockEvents.length + 1);
+                const newId = 'new-' + Date.now();
                 const pinColors = ['red', 'teal', 'yellow'];
                 const randomColor = pinColors[Math.floor(Math.random() * pinColors.length)];
 
@@ -925,12 +955,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: newId,
                     title: 'New Event Title',
                     status: 'Draft',
-                    date: 'unscheduled',
-                    venue: 'TBD',
-                    description: 'Forty local growers, a coffee cart, and the season\'s best produce...',
+                    date: 'Sat, 9 Aug',
+                    time: '10:00am-4:00pm',
+                    venue: 'Riverside Green',
+                    category: 'Community & Workshop',
+                    description: 'A brand new maker and community event in town.',
                     pinColor: randomColor,
                     tickets: [
-                        { name: 'General Entry', price: '$10.00' }
+                        { name: 'General Ticket', price: '$10.00' }
                     ]
                 };
 
@@ -938,26 +970,122 @@ document.addEventListener('DOMContentLoaded', () => {
                 activeEventId = newId;
                 renderCards();
                 populateEditor(newEvent);
-                showToast('New draft event card added to the corkboard!', 'success');
+                showToast('New event card added to the corkboard. Fill details and click "Publish event" to save!', 'success');
+            });
+        }
+
+        // Save event to backend API
+        const saveEventToBackend = async (status = 'Published') => {
+            const form = document.getElementById('event-editor-form');
+            const title = editorTitleInput ? editorTitleInput.value.trim() : '';
+            const date = editorDateInput ? editorDateInput.value.trim() : '';
+            const venue = editorVenueInput ? editorVenueInput.value.trim() : '';
+            const description = editorDescriptionInput ? editorDescriptionInput.value.trim() : '';
+            const category = editorCategorySelect ? editorCategorySelect.value : 'Food & Produce';
+            const time = editorTimeInput ? editorTimeInput.value.trim() : '7:00-11:00am';
+
+            if (!title) {
+                showToast('Please enter an event title.', 'error');
+                if (editorTitleInput) editorTitleInput.focus();
+                return;
+            }
+
+            const csrfTokenInput = form ? form.querySelector('[name=csrfmiddlewaretoken]') : null;
+            const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
+
+            if (btnSubmitPublish) {
+                btnSubmitPublish.disabled = true;
+                btnSubmitPublish.textContent = 'Publishing...';
+            }
+
+            const postData = {
+                title: title,
+                date: date,
+                venue: venue,
+                location: venue,
+                time: time,
+                category: category,
+                description: description,
+                status: status
+            };
+
+            const actionUrl = form ? form.getAttribute('action') || '/event-management/' : '/event-management/';
+
+            try {
+                const response = await fetch(actionUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new URLSearchParams(postData)
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Server error creating event.');
+                }
+
+                showToast(data.message || `Event "${title}" published successfully!`, 'success');
+
+                // Update active event in corkboard
+                const activeEvt = mockEvents.find(e => e.id === activeEventId);
+                if (activeEvt) {
+                    activeEvt.status = status;
+                    if (data.event && data.event.id) {
+                        activeEvt.id = String(data.event.id);
+                        activeEventId = activeEvt.id;
+                    }
+                } else if (data.event) {
+                    mockEvents.push({
+                        id: String(data.event.id),
+                        title: data.event.title,
+                        status: status,
+                        date: data.event.date,
+                        time: data.event.time,
+                        venue: data.event.location,
+                        category: data.event.category,
+                        description: data.event.description,
+                        pinColor: 'red',
+                        tickets: [{ name: 'General Ticket', price: '$12.00' }]
+                    });
+                    activeEventId = String(data.event.id);
+                }
+
+                renderCards();
+
+            } catch (err) {
+                console.error('Error saving event:', err);
+                showToast(err.message || 'Error publishing event.', 'error');
+            } finally {
+                if (btnSubmitPublish) {
+                    btnSubmitPublish.disabled = false;
+                    btnSubmitPublish.textContent = 'Publish event';
+                }
+            }
+        };
+
+        // Form submit handler
+        const editorForm = document.getElementById('event-editor-form');
+        if (editorForm) {
+            editorForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveEventToBackend('Published');
             });
         }
 
         // Action Buttons Submit handlers
         if (btnSubmitPublish) {
             btnSubmitPublish.addEventListener('click', (e) => {
- 
-                const activeEvt = mockEvents.find(e => e.id === activeEventId);
-                if (activeEvt) {
-                    activeEvt.status = 'Published';
-                    renderCards();
-                    showToast(`Event "${activeEvt.title}" has been successfully published!`, 'success');
-                }
+                e.preventDefault();
+                saveEventToBackend('Published');
             });
         }
 
         if (btnSubmitDraft) {
             btnSubmitDraft.addEventListener('click', (e) => {
-  
+                e.preventDefault();
                 const activeEvt = mockEvents.find(e => e.id === activeEventId);
                 if (activeEvt) {
                     activeEvt.status = 'Draft';
@@ -969,7 +1097,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Initialize display
         renderCards();
-        const initialActive = mockEvents.find(e => e.id === activeEventId);
+        const initialActive = mockEvents.find(e => e.id === activeEventId) || mockEvents[0];
         if (initialActive) {
             populateEditor(initialActive);
         }

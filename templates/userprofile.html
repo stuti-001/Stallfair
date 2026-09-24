@@ -264,7 +264,7 @@
           <span class="nav-separator"></span>
 
           <a href="{% url 'user_profile' %}" class="nav-item active">Profile</a>
-          {% if user.is_authenticated %}
+          {% if user.is_authenticated and request.session.auth_role == 'customer' %}
           <a href="{% url 'logout' %}" class="nav-item nav-btn-login">Log out</a>
           {% else %}
           <a href="{% url 'login' %}" class="nav-item nav-btn-login">Log in</a>

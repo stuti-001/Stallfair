@@ -29,6 +29,9 @@
 
      <form id="loginForm" class="auth-form" method="POST" action="{% url 'admin_login' %}">
           {% csrf_token %}        
+          {% if request.GET.next %}
+          <input type="hidden" name="next" value="{{ request.GET.next }}">
+          {% endif %}
           <div class="field">
           <label for="username" class="field__label">Email</label>
           <input

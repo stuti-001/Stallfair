@@ -1895,7 +1895,7 @@ body {
 /* Full Width Header / Navbar */
 .organizer-navbar {
     background-color: #123D33;
-    height: 76px;
+    height: 54px;
     display: flex;
     justify-content: space-between;
     align-items: stretch;
@@ -1924,12 +1924,12 @@ body {
 
 .organizer-navbar .nav-logo-dot {
     color: #FAF5EC;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
 }
 
 .organizer-navbar .nav-logo-text {
     font-family: 'Lora', serif;
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     font-weight: 700;
     font-style: italic;
     color: #FAF5EC;
@@ -1937,18 +1937,14 @@ body {
 }
 
 .organizer-navbar .nav-logo-sub {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    color: rgba(250, 245, 236, 0.6);
-    margin-top: 1px;
+    display: none;
 }
 
 .organizer-navbar .nav-center {
     display: flex;
     align-items: flex-end;
     gap: 4px;
+    height: 100%;
 }
 
 .organizer-navbar .nav-item {
@@ -1956,7 +1952,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 0 24px;
-    height: 52px;
+    height: 46px;
     color: rgba(250, 245, 236, 0.65);
     text-decoration: none;
     font-family: 'Plus Jakarta Sans', sans-serif;
@@ -1964,7 +1960,7 @@ body {
     font-size: 0.95rem;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
-    border-radius: 12px 12px 0 0;
+    border-radius: 10px 10px 0 0;
 }
 
 .organizer-navbar .nav-item:hover {
@@ -1976,6 +1972,7 @@ body {
     color: #123D33;
     font-weight: 700;
     height: 54px;
+    border-radius: 0 0 0 0;
 }
 
 /* Inverted border radius curves for active tab */
@@ -2016,7 +2013,7 @@ body {
     gap: 12px;
     border-left: 1px dashed rgba(250, 245, 236, 0.2);
     padding-left: 24px;
-    height: 36px;
+    height: 32px;
 }
 
 .organizer-navbar .profile-avatar {
@@ -2256,6 +2253,19 @@ body {
     outline: none;
     border-color: #286055;
     box-shadow: 0 0 0 4px rgba(40, 96, 85, 0.12);
+}
+
+select.editor-input,
+.editor-select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23286055' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 20px center;
+    background-size: 16px;
+    padding-right: 48px;
 }
 
 .editor-row {

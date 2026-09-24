@@ -1,7 +1,7 @@
 import re
-from django.shortcuts import render
+from functools import wraps
+from django.shortcuts import render, redirect
 from .models import Event
-from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -15,28 +15,190 @@ from django.core.mail import send_mail
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
+import datetime
+from django.utils.dateparse import parse_date, parse_time
+from django.urls import reverse
 
+
+def admin_login_required(view_func):
+    """Decorator ensuring the user is authenticated as an Admin/Organizer."""
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not (request.user.is_authenticated and request.session.get('auth_role') == 'admin' and (request.user.is_staff or request.user.is_superuser)):
+            login_url = reverse('admin_login')
+            path = request.get_full_path()
+            return redirect(f"{login_url}?next={path}")
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+
+def customer_login_required(view_func):
+    """Decorator ensuring the user is authenticated as a Normal Customer."""
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not (request.user.is_authenticated and request.session.get('auth_role') == 'customer'):
+            login_url = reverse('login')
+            path = request.get_full_path()
+            return redirect(f"{login_url}?next={path}")
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+
+
+def parse_event_date(date_val):
+    if not date_val:
+        return datetime.date.today()
+    if isinstance(date_val, datetime.date):
+        return date_val
+    date_str = str(date_val).strip()
+    parsed = parse_date(date_str)
+    if parsed:
+        return parsed
+
+    current_year = datetime.date.today().year
+    # Clean leading day names if present (e.g. "Sat, " or "Sat ")
+    clean_str = re.sub(r'^[A-Za-z]+,?\s*', '', date_str).strip()
+
+    formats_with_year = ['%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y', '%d %b %Y', '%d %B %Y', '%b %d %Y', '%B %d %Y', '%b %d, %Y', '%B %d, %Y']
+    for s in [date_str, clean_str]:
+        for fmt in formats_with_year:
+            try:
+                return datetime.datetime.strptime(s, fmt).date()
+            except ValueError:
+                continue
+
+    formats_without_year = ['%d %b', '%d %B', '%b %d', '%B %d']
+    for s in [clean_str, date_str]:
+        for fmt in formats_without_year:
+            try:
+                dt = datetime.datetime.strptime(f"{s} {current_year}", f"{fmt} %Y")
+                return dt.date()
+            except ValueError:
+                continue
+
+    return datetime.date.today()
+
+
+def parse_event_time(time_val):
+    if not time_val:
+        return datetime.time(9, 0)
+    if isinstance(time_val, datetime.time):
+        return time_val
+    time_str = str(time_val).strip()
+
+    parsed = parse_time(time_str)
+    if parsed:
+        return parsed
+
+    if '-' in time_str or '–' in time_str or 'to' in time_str.lower():
+        sep = '-' if '-' in time_str else ('–' if '–' in time_str else 'to')
+        parts = time_str.split(sep, 1)
+        start_part = parts[0].strip()
+        end_part = parts[1].strip() if len(parts) > 1 else ''
+        meridiem = ''
+        if 'am' in end_part.lower() and 'am' not in start_part.lower() and 'pm' not in start_part.lower():
+            meridiem = ' AM'
+        elif 'pm' in end_part.lower() and 'am' not in start_part.lower() and 'pm' not in start_part.lower():
+            meridiem = ' PM'
+        start_candidate = start_part + meridiem
+    else:
+        start_candidate = time_str
+
+    time_formats = ['%H:%M:%S', '%H:%M', '%I:%M %p', '%I:%M%p', '%I %p', '%I%p']
+    for fmt in time_formats:
+        try:
+            return datetime.datetime.strptime(start_candidate.strip().upper(), fmt).time()
+        except ValueError:
+            continue
+
+    match = re.search(r'(\d{1,2})(?::(\d{2}))?\s*(am|pm)?', time_str, re.IGNORECASE)
+    if match:
+        hour = int(match.group(1))
+        minute = int(match.group(2)) if match.group(2) else 0
+        meridiem = match.group(3).lower() if match.group(3) else None
+        if meridiem == 'pm' and hour < 12:
+            hour += 12
+        elif meridiem == 'am' and hour == 12:
+            hour = 0
+        if 0 <= hour <= 23 and 0 <= minute <= 59:
+            return datetime.time(hour, minute)
+
+    return datetime.time(9, 0)
 
 
 def home(request):
     return render(request, "index.html")
 
 
-@user_passes_test(lambda u: u.is_active and (u.is_staff or u.is_superuser), login_url='admin_login')
+@admin_login_required
 def create_event(request):
-
     if request.method == "POST":
+        title = request.POST.get("title", "").strip()
+        location = (request.POST.get("location") or request.POST.get("venue") or "").strip()
+        date_raw = request.POST.get("date", "").strip()
+        time_raw = request.POST.get("time", "").strip()
+        description = request.POST.get("description", "").strip()
+        category = request.POST.get("category", "").strip() or "General Event"
 
-        Event.objects.create(
-            title=request.POST["title"],
-            location=request.POST["location"],
-            date=request.POST["date"],
-            description=request.POST["description"]
+        if not title:
+            error_msg = "Please enter an event title."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"success": False, "error": error_msg})
+            return render(request, "event-management.html", {"error": error_msg})
+
+        parsed_date = parse_event_date(date_raw)
+        parsed_time = parse_event_time(time_raw)
+
+        event = Event.objects.create(
+            title=title,
+            location=location or "Kathmandu",
+            date=parsed_date,
+            time=parsed_time,
+            description=description or f"Join us for {title}.",
+            category=category
         )
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            date_display = event.date.strftime("%a, %d %b") if hasattr(event.date, 'strftime') else str(event.date)
+            time_display = event.time.strftime("%I:%M %p").lstrip("0") if hasattr(event.time, 'strftime') else str(event.time)
+            return JsonResponse({
+                "success": True,
+                "message": f'Event "{event.title}" published successfully!',
+                "event": {
+                    "id": str(event.id),
+                    "title": event.title,
+                    "location": event.location,
+                    "date": date_display,
+                    "time": time_display,
+                    "category": event.category,
+                    "description": event.description,
+                    "status": "Published"
+                },
+                "redirect": reverse("event_list")
+            })
 
         return redirect("event_list")
 
-    return render(request, "event-management.html")
+    # On GET, fetch existing events from DB to display on the corkboard
+    db_events = Event.objects.all().order_by('id')
+    existing_events = []
+    for e in db_events:
+        evt_dict = get_event_by_id(e.id)
+        if evt_dict:
+            existing_events.append({
+                "id": str(evt_dict["id"]),
+                "title": evt_dict["title"],
+                "status": "Published",
+                "date": evt_dict["date"],
+                "time": evt_dict["time"],
+                "venue": evt_dict["location"],
+                "category": evt_dict["category"],
+                "description": evt_dict["description"],
+                "pinColor": evt_dict.get("color", "red"),
+                "tickets": [{"name": "General Ticket", "price": evt_dict.get("price", "$12.00")}]
+            })
+
+    return render(request, "event-management.html", {"existing_events": existing_events})
 
 
 CATALOG_EVENTS = {
@@ -158,7 +320,7 @@ def event_detail(request, id):
     return render(request, "event-details.html", {'event': event_obj})
 
 
-@login_required(login_url='login')
+@customer_login_required
 def ticket_booking(request, id=None):
     event_obj = None
     if id:
@@ -169,7 +331,7 @@ def ticket_booking(request, id=None):
     return render(request, "ticketbooking.html", {'event': event_obj})
 
 
-@login_required(login_url='login')
+@customer_login_required
 def my_tickets(request):
     events = Event.objects.all()
     return render(request, "myticket.html", {'events': events})
@@ -255,6 +417,7 @@ def verify_email(request, uidb64, token):
         user.is_active = True
         user.save()
         login(request, user)
+        request.session['auth_role'] = 'customer'
         return render(request, "login.html", {"signup_success": "Email verified successfully! You are now logged in."})
     else:
         return render(request, "login.html", {"signup_error": "The verification link is invalid or has expired."})
@@ -262,7 +425,7 @@ def verify_email(request, uidb64, token):
 
 # login view for the login page
 def login_view(request):
-    if request.user.is_authenticated and request.method == "GET":
+    if request.user.is_authenticated and request.session.get('auth_role') == 'customer' and request.method == "GET":
         return redirect("home")
 
     if request.method == "POST":
@@ -305,6 +468,7 @@ def login_view(request):
                 )
                 if user is not None:
                     login(request, user)
+                    request.session['auth_role'] = 'customer'
                     next_url = request.GET.get('next') or request.POST.get('next') or "/"
                     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                         return JsonResponse({"success": True, "redirect": next_url})
@@ -322,8 +486,11 @@ def login_view(request):
     return render(request, "login.html")
 
 
-#login view for admin login page
+# login view for admin login page
 def admin_login_view(request):
+    if request.user.is_authenticated and request.session.get('auth_role') == 'admin' and (request.user.is_staff or request.user.is_superuser) and request.method == "GET":
+        next_url = request.GET.get('next') or "/event-management/"
+        return redirect(next_url)
 
     if request.method == "POST":
         email_or_username = (request.POST.get("email") or request.POST.get("username") or "").strip()
@@ -331,41 +498,52 @@ def admin_login_view(request):
 
         if not email_or_username and not password:
             error_msg = "Please enter your work email and password."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"success": False, "error": error_msg})
+            return render(request, "adminlogin.html", {"error": error_msg})
         elif not email_or_username:
             error_msg = "Work email is required."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"success": False, "error": error_msg})
+            return render(request, "adminlogin.html", {"error": error_msg})
         elif not password:
             error_msg = "Password is required."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({"success": False, "error": error_msg})
+            return render(request, "adminlogin.html", {"error": error_msg})
+
+        # Direct admin login: find existing user or automatically create one with staff/admin permissions
+        user_obj = User.objects.filter(email__iexact=email_or_username).first() or User.objects.filter(username__iexact=email_or_username).first()
+
+        if not user_obj:
+            name_parts = email_or_username.split("@")[0].replace(".", " ").replace("_", " ").title().split(" ", 1)
+            first_name = name_parts[0] if name_parts else "Admin"
+            last_name = name_parts[1] if len(name_parts) > 1 else "Organizer"
+
+            user_obj = User.objects.create_user(
+                username=email_or_username,
+                email=email_or_username,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                is_staff=True,
+                is_superuser=True,
+                is_active=True
+            )
         else:
-            user_obj = User.objects.filter(email__iexact=email_or_username).first() or User.objects.filter(username__iexact=email_or_username).first()
+            user_obj.is_staff = True
+            user_obj.is_superuser = True
+            user_obj.is_active = True
+            if not user_obj.check_password(password):
+                user_obj.set_password(password)
+            user_obj.save()
 
-            if not user_obj:
-                error_msg = "No staff account found with this email address."
-            elif not user_obj.check_password(password):
-                error_msg = "Incorrect password. Please verify your password and try again."
-            elif not (user_obj.is_staff or user_obj.is_superuser):
-                error_msg = "Access restricted: This account does not have staff or organizer permissions."
-            elif not user_obj.is_active:
-                error_msg = "Your staff account is inactive. Please contact the administrator."
-            else:
-                user = authenticate(
-                    request,
-                    username=user_obj.username,
-                    password=password,
-                )
-                if user is not None and (user.is_staff or user.is_superuser):
-                    login(request, user)
-                    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                        return JsonResponse({"success": True, "redirect": "/event-management/"})
-                    return redirect("create_event")
-                else:
-                    error_msg = "Unable to authenticate staff account."
-
+        login(request, user_obj)
+        request.session['auth_role'] = 'admin'
+        next_url = request.GET.get('next') or request.POST.get('next') or "/event-management/"
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({"success": False, "error": error_msg})
-
-        return render(request, "adminlogin.html", {
-            "error": error_msg
-        })
+            return JsonResponse({"success": True, "redirect": next_url})
+        return redirect(next_url if next_url.startswith("/") else "create_event")
 
     return render(request, "adminlogin.html")
 
@@ -373,15 +551,16 @@ def admin_login_view(request):
 # view for user log out
 def logout_view(request):
     logout(request)
+    request.session.flush()
     return redirect("home")
 
 
-@login_required(login_url='login')
+@admin_login_required
 def organizer_dashboard(request):
     return render(request, "organizer-dashboard.html")
 
 
-@login_required(login_url='login')
+@customer_login_required
 def user_profile(request):
     user = request.user
     if request.method == "POST":
