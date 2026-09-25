@@ -133,6 +133,24 @@ def home(request):
 @admin_login_required
 def create_event(request):
     if request.method == "POST":
+        action = request.POST.get("action", "").strip()
+        event_id = request.POST.get("event_id") or request.POST.get("id")
+        if action == "delete" and event_id:
+            try:
+                if str(event_id).isdigit():
+                    Event.objects.filter(id=int(event_id)).delete()
+                else:
+                    title = request.POST.get("title", "").strip()
+                    if title:
+                        Event.objects.filter(title__iexact=title).delete()
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({"success": True, "message": f'Event deleted permanently from database.'})
+                return redirect("create_event")
+            except Exception as e:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({"success": False, "error": str(e)})
+                return redirect("create_event")
+
         title = request.POST.get("title", "").strip()
         location = (request.POST.get("location") or request.POST.get("venue") or "").strip()
         date_raw = request.POST.get("date", "").strip()
@@ -199,6 +217,40 @@ def create_event(request):
             })
 
     return render(request, "event-management.html", {"existing_events": existing_events})
+
+
+@admin_login_required
+def delete_event(request, id=None):
+    if request.method in ["POST", "DELETE"]:
+        event_id = id or request.POST.get("event_id") or request.POST.get("id")
+        title = request.POST.get("title", "").strip()
+
+        if event_id:
+            try:
+                if str(event_id).isdigit():
+                    Event.objects.filter(id=int(event_id)).delete()
+                elif title:
+                    Event.objects.filter(title__iexact=title).delete()
+
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({"success": True, "message": "Event deleted permanently from the database."})
+                return redirect("create_event")
+            except Exception as e:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({"success": False, "error": str(e)})
+                return redirect("create_event")
+
+        if title:
+            Event.objects.filter(title__iexact=title).delete()
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({"success": True, "message": "Event removed successfully."})
+        return redirect("create_event")
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({"success": False, "error": "Invalid request method."})
+    return redirect("create_event")
+
 
 
 CATALOG_EVENTS = {

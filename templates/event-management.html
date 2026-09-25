@@ -14,7 +14,7 @@
   <body class="organizer-body">
     <!-- Full Width Organizer Navbar -->
     <header class="organizer-navbar">
-      <a href="{% url 'home' %}" class="nav-left">
+      <a href="{% url 'organizer_dashboard' %}" class="nav-left">
         <div class="logo-group">
           <div class="logo-main">
             <span class="nav-logo-dot">●</span>
@@ -23,7 +23,7 @@
         </div>
       </a>
       <nav class="nav-center">
-        <a href="#" class="nav-item">Dashboard</a>
+        <a href="{% url 'organizer_dashboard' %}" class="nav-item">Dashboard</a>
         <a href="{% url 'create_event' %}" class="nav-item active">Manage Events</a>
         <a href="#" class="nav-item">Bookings</a>
         <a href="#" class="nav-item">Analytics</a>
@@ -200,6 +200,9 @@
                 </button>
                 <button type="button" class="btn-secondary-action" id="btn-submit-draft">
                   Save draft
+                </button>
+                <button type="button" class="btn-secondary-action btn-delete-action" id="btn-submit-delete" style="display: none;">
+                  Delete Event
                 </button>
               </div>
             </form>

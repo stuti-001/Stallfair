@@ -29,6 +29,8 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("verify/<str:uidb64>/<str:token>/", views.verify_email, name="verify_email"),
     path("event-management/", views.create_event, name="create_event"),
+    path("delete-event/<int:id>/", views.delete_event, name="delete_event_with_id"),
+    path("delete-event/", views.delete_event, name="delete_event"),
     path("events/", views.event_list, name="event_list"),
     path("events/<int:id>/", views.event_detail, name="event_detail"),
     path("organizer-dashboard/", views.organizer_dashboard,

@@ -747,6 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const editorTimeInput = document.getElementById('editor-time');
     const btnSubmitPublish = document.getElementById('btn-submit-publish');
     const btnSubmitDraft = document.getElementById('btn-submit-draft');
+    const btnSubmitDelete = document.getElementById('btn-submit-delete');
 
     if (eventCardsContainer) {
         let mockEvents = [
@@ -808,6 +809,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let activeEventId = mockEvents[0]?.id || '1';
 
+        const updateButtonVisibility = (eventObj) => {
+            const isPublished = eventObj && eventObj.status && eventObj.status.toLowerCase() === 'published';
+            if (btnSubmitDraft) {
+                btnSubmitDraft.style.display = isPublished ? 'none' : 'inline-block';
+            }
+            if (btnSubmitDelete) {
+                btnSubmitDelete.style.display = isPublished ? 'inline-block' : 'none';
+            }
+        };
+
         // Function to render ticket tiers list
         const renderTicketTiers = (tickets) => {
             const container = document.getElementById('editor-ticket-tiers');
@@ -867,6 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editorCategorySelect) editorCategorySelect.value = eventObj.category || 'Food & Produce';
             if (editorTimeInput) editorTimeInput.value = eventObj.time || '7:00-11:00am';
             renderTicketTiers(eventObj.tickets);
+            updateButtonVisibility(eventObj);
         };
 
         // Function to render all cards in the list
@@ -1054,6 +1066,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 renderCards();
+                const updatedEvt = mockEvents.find(e => e.id === activeEventId);
+                updateButtonVisibility(updatedEvt);
 
             } catch (err) {
                 console.error('Error saving event:', err);
@@ -1062,6 +1076,83 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (btnSubmitPublish) {
                     btnSubmitPublish.disabled = false;
                     btnSubmitPublish.textContent = 'Publish event';
+                }
+            }
+        };
+
+        // Delete event from backend API
+        const deleteEventFromBackend = async () => {
+            const activeEvt = mockEvents.find(e => e.id === activeEventId);
+            if (!activeEvt) return;
+
+            const title = activeEvt.title;
+            const form = document.getElementById('event-editor-form');
+            const csrfTokenInput = form ? form.querySelector('[name=csrfmiddlewaretoken]') : null;
+            const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
+
+            if (btnSubmitDelete) {
+                btnSubmitDelete.disabled = true;
+                btnSubmitDelete.textContent = 'Deleting...';
+            }
+
+            try {
+                const postData = {
+                    action: 'delete',
+                    event_id: activeEvt.id,
+                    id: activeEvt.id,
+                    title: title
+                };
+
+                const response = await fetch(`/delete-event/${activeEvt.id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new URLSearchParams(postData)
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Server error deleting event.');
+                }
+
+                showToast(data.message || `Event "${title}" permanently deleted from database.`, 'success');
+
+                // Remove from mockEvents list
+                mockEvents = mockEvents.filter(e => e.id !== activeEventId);
+
+                if (mockEvents.length > 0) {
+                    activeEventId = mockEvents[0].id;
+                    renderCards();
+                    populateEditor(mockEvents[0]);
+                } else {
+                    const defaultEvent = {
+                        id: 'new-' + Date.now(),
+                        title: 'New Event Title',
+                        status: 'Draft',
+                        date: 'Sat, 9 Aug',
+                        time: '10:00am-4:00pm',
+                        venue: 'Riverside Green',
+                        category: 'Community & Workshop',
+                        description: 'A brand new event.',
+                        pinColor: 'red',
+                        tickets: [{ name: 'General Ticket', price: '$10.00' }]
+                    };
+                    mockEvents.push(defaultEvent);
+                    activeEventId = defaultEvent.id;
+                    renderCards();
+                    populateEditor(defaultEvent);
+                }
+
+            } catch (err) {
+                console.error('Error deleting event:', err);
+                showToast(err.message || 'Error deleting event.', 'error');
+            } finally {
+                if (btnSubmitDelete) {
+                    btnSubmitDelete.disabled = false;
+                    btnSubmitDelete.textContent = 'Delete Event';
                 }
             }
         };
@@ -1090,8 +1181,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (activeEvt) {
                     activeEvt.status = 'Draft';
                     renderCards();
+                    updateButtonVisibility(activeEvt);
                     showToast(`Draft for "${activeEvt.title}" has been saved.`, 'success');
                 }
+            });
+        }
+
+        if (btnSubmitDelete) {
+            btnSubmitDelete.addEventListener('click', (e) => {
+                e.preventDefault();
+                deleteEventFromBackend();
             });
         }
 

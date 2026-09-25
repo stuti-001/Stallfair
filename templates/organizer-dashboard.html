@@ -8,13 +8,13 @@
     <!-- CSS Link -->
     <link rel="stylesheet" href="{% static 'style.css' %}" />
     <!-- JS Link -->
-    <script defer src="{% static 'script.js' %}" style="display: none;"></script>
+    <script defer src="{% static 'script.js' %}"></script>
   </head>
 
   <body class="organizer-body">
-    <!-- Full Width Organizer Navbar -->
+    <!-- Full Width Organizer Navbar (Matching Manage Events page) -->
     <header class="organizer-navbar">
-      <a href="{% url 'home' %}" class="nav-left">
+      <a href="{% url 'organizer_dashboard' %}" class="nav-left">
         <div class="logo-group">
           <div class="logo-main">
             <span class="nav-logo-dot">●</span>
@@ -31,31 +31,93 @@
       <div class="nav-right">
         <div class="profile-group">
           <span class="profile-avatar"></span>
-          <span class="profile-name">{{ request.user.first_name }} {{ request.user.last_name|default:"" }}</span>
+          <span class="profile-name">{{ request.user.first_name|default:"M." }} {{ request.user.last_name|default:"Rai" }}</span>
           <a href="{% url 'logout' %}" class="sub-link" style="margin-left: 15px; color: var(--color-accent-peach); font-weight: 600; text-decoration: none;">Log out</a>
         </div>
       </div>
     </header>
 
-    <!-- Main Content Area -->
-    <div class="organizer-wrapper" style="display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 120px);">
-      <main class="organizer-main" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; background: var(--color-bg-card); border: 2px solid var(--color-border-dark); border-radius: 12px; box-shadow: 6px 6px 0 var(--color-border-dark); max-width: 600px; width: 90%;">
-        <div class="badge-wrapper" style="margin-bottom: 20px;">
-          <span class="badge badge-new" style="background: var(--color-bg-accent-green); color: var(--color-accent-teal); font-weight: bold;">Backstage access granted</span>
+    <!-- Main Dashboard Area -->
+    <main class="dashboard-wrapper">
+      <!-- Header Section -->
+      <section class="dashboard-header">
+        <div class="dashboard-briefing-tag">MORNING BRIEFING · FRI, 31 JUL</div>
+        <h1 class="dashboard-title">Here's how things stand.</h1>
+      </section>
+
+      <!-- 4 Medium-Sized Stats Boxes -->
+      <section class="dashboard-metrics-grid">
+        <!-- Metric Card 1: LIVE EVENTS -->
+        <div class="metric-card metric-orange">
+          <div class="metric-label">LIVE EVENTS</div>
+          <div class="metric-value">24</div>
+          <div class="metric-trend">
+            <span class="trend-arrow">↑</span> 3 this week
+          </div>
         </div>
-        <h1 style="font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--color-text-dark); margin-bottom: 15px;">Welcome back, {{ request.user.first_name|default:"Organizer" }}!</h1>
-        <p style="font-family: 'Quicksand', sans-serif; font-size: 1.1rem; color: var(--color-text-muted); line-height: 1.6; margin-bottom: 30px;">
-          You have successfully logged in to the Stallfair backstage area. From here, you can manage your pop-up event listings, track ticket sales, and view real-time visitor analytics.
-        </p>
-        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
-          <a href="{% url 'create_event' %}" class="btn-cta-browse" style="text-decoration: none; padding: 12px 24px; font-weight: 700;">
-            Manage event listings &rarr;
+
+        <!-- Metric Card 2: TICKETS SOLD -->
+        <div class="metric-card metric-red">
+          <div class="metric-label">TICKETS SOLD</div>
+          <div class="metric-value">1,842</div>
+          <div class="metric-trend">
+            <span class="trend-arrow">↑</span> 12% vs last wk
+          </div>
+        </div>
+
+        <!-- Metric Card 3: REVENUE -->
+        <div class="metric-card metric-teal">
+          <div class="metric-label">REVENUE</div>
+          <div class="metric-value">$26.3k</div>
+          <div class="metric-trend">
+            <span class="trend-arrow">↑</span> 8% vs last wk
+          </div>
+        </div>
+
+        <!-- Metric Card 4: THIS WEEK -->
+        <div class="metric-card metric-yellow">
+          <div class="metric-label">THIS WEEK</div>
+          <div class="metric-value">6</div>
+          <div class="metric-trend">
+            pop-ups scheduled
+          </div>
+        </div>
+      </section>
+
+      <!-- Lower Section: Today's Line-up & Quick Actions -->
+      <section class="dashboard-bottom-grid">
+        <!-- Today's Line-up Card -->
+        <div class="dashboard-card lineup-card">
+          <h2 class="lineup-heading">Today's line-up</h2>
+          <div class="lineup-list">
+            <!-- Lineup Item 1 -->
+            <div class="lineup-item">
+              <span class="lineup-name">Sunrise Farmers Market</span>
+              <span class="lineup-pill pill-live">Live · 7-11am</span>
+            </div>
+            <!-- Lineup Item 2 -->
+            <div class="lineup-item">
+              <span class="lineup-name">Craft Alley Pop-up</span>
+              <span class="lineup-pill pill-setup">Setup · 2pm</span>
+            </div>
+            <!-- Lineup Item 3 -->
+            <div class="lineup-item">
+              <span class="lineup-name">Night Noodle Bazaar</span>
+              <span class="lineup-pill pill-tonight">Tonight · 6pm</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Card -->
+        <div class="dashboard-card actions-card">
+          <a href="{% url 'create_event' %}" class="btn-dashboard-primary">
+            + New event
           </a>
-          <a href="{% url 'logout' %}" class="btn" style="text-decoration: none; border: 2px solid var(--color-border-dark); padding: 12px 24px; background: transparent; color: var(--color-text-dark); border-radius: 6px; font-weight: 700; box-shadow: 3px 3px 0 var(--color-border-dark); transition: transform 0.1s;">
-            Log out
+          <a href="{% url 'event_list' %}" class="btn-dashboard-secondary">
+            View bookings
           </a>
         </div>
-      </main>
-    </div>
+      </section>
+    </main>
   </body>
 </html>
